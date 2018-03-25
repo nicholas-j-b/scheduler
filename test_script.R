@@ -8,8 +8,8 @@ SHIFT_ID_LOWER <- 100000
 SHIFT_ID_UPPER <- 999999
 
 # TESTING CONSTANTS
-PEOPLE_LOWER <- 5
-PEOPLE_UPPER <- 15
+PEOPLE_LOWER <- 12
+PEOPLE_UPPER <- 25
 SHIFT_LOWER <- 5
 SHIFT_UPPER <- 15
 GROUP_LOWER <- 3
@@ -18,8 +18,8 @@ SHIFT_WEIGHT_MIN <- 1
 SHIFT_WEIGHT_MAX <- 5
 MIN_MIN <- 2
 MIN_MAX <- 5
-ADD_MIN <- 8
-ADD_MAX <- 20
+ADD_MIN <- 12
+ADD_MAX <- 40
 
 # generate practice inputs
 
@@ -45,8 +45,8 @@ rownames(init1) <- shift.names
 # if a shift could use a worker from group A or B then create a new group C and 
 # classify all A's and B's additionally as C's
 
-init2 <- cbind(runif(s, min = SHIFT_WEIGHT_MIN, max = SHIFT_WEIGHT_MAX), replicate(g, rpois(s, 1.5)))
-colnames(init2) <- c("WEIGHT", paste0(LETTERS[1:g]))
+init2 <- cbind(replicate(g, rpois(s, 1.5)))
+colnames(init2) <- paste0(LETTERS[1:g])
 rownames(init2) <- shift.names
 
 # init3
@@ -65,7 +65,14 @@ init4 <- cbind(replicate(2, runif(p, min = MIN_MIN, max = MIN_MAX)))
 init4[ ,2] <- init4[ ,2] + runif(p, min = ADD_MIN, max = ADD_MAX)
 init4 <- cbind(init4, ((init4[ , 2] - init4[ , 1]) * runif(p, min = 0, max = 1)) + init4[ , 1])
 
+# weights
+# shift weights
 
+weights <- runif(s, min = SHIFT_WEIGHT_MIN, max = SHIFT_WEIGHT_MAX)
+names(weights) <- shift.names
+
+# save files for loading into program
+save(init1, init2, init3, init4, weights, file = "~/ws-r/nsp/gen1.RData")
 
 
 
