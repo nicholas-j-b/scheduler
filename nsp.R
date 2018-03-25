@@ -21,9 +21,6 @@ g <- ncol(init2)
 
 work.mat <- matrix(data = FALSE, nrow = sum(init2), ncol = p)
 
-
-
-
 slot.names <- list()
 for(i in 1:s){
   slot.names <- c(slot.names, colnames(init2)[rep(1:g, times = init2[i, ])])
@@ -33,11 +30,9 @@ slot.ref.names <- rep(rownames(init2), times = rowSums(init2))
 slot.names <- make.unique(paste0(slot.ref.names, slot.names))
 slot.names
 
+rownames(work.mat) <- slot.names
 
-
-
-
-
+# desire.mat <- matrix(0, nrow = sum(init2), ncol = p)
 
 
 
