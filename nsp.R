@@ -36,24 +36,31 @@ rownames(work.mat) <- slot.titles
 
 #########################
 # establish check.mat
+# check.mat is a lookup table that has value true when worker is available and in correct group
 
 # person availability / person in group using check.mat
-
-check.mat <- apply(init3, MARGIN = 1, FUN = function(x) x[slot.names]) # maybe R isn't so bad afterall
+# generate at begin
+group.mat <- apply(init3, MARGIN = 1, FUN = function(x) x[slot.names]) # maybe R isn't so bad afterall
 times.vec <- unlist(lapply(inames, FUN = function(x) length(grep(x, wnames))))
-(init1 != 0)[rep(1:s, times = times.vec), ]
+rep.vec <- rep.vec <- rep(1:s, times = times.vec)
+availabilities.mat <- (init1 != 0)[rep.vec, ]
+check.mat <- availabilities.mat & group.mat
+rownames(check.mat) <- slot.titles
 
+expanded.weights <- rep(weights, times = times.vec)
 
+# all entries in work.mat fit in check.mat
+sum(work.mat & check.mat) == sum(work.mat)
 
+# check only 1 slot / person / shift
+all(apply(work.mat, MARGIN = 2, FUN = tapply, INDEX = rep.vec, sum) <= 1)
 
+# check min / max / optimal
 
+weight.slots.worked <- expanded.weights %*% work.mat
 
-
-
-
-
-
-
+# check between min and max
+(init4[ ,1] < weight.slots.worked) & (weight.slots.worked < init4[ ,2])
 
 
 
