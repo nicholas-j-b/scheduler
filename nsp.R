@@ -37,9 +37,6 @@ slot.titles <- make.unique(paste0(slot.ref.names, slot.names))
 
 rownames(work.mat) <- slot.titles
 
-# desire.mat <- matrix(0, nrow = sum(init2), ncol = p)
-
-
 #########################
 # establish check.mat
 # check.mat is a lookup table that has value true when worker is available and in correct group
@@ -48,7 +45,7 @@ rownames(work.mat) <- slot.titles
 # generate at begin
 group.mat <- apply(init3, MARGIN = 1, FUN = function(x) x[slot.names]) # maybe R isn't so bad afterall
 times.vec <- unlist(lapply(rownames(init1), FUN = function(x) length(grep(x, slot.titles))))
-rep.vec <- rep.vec <- rep(1:s, times = times.vec)
+rep.vec <- rep(1:s, times = times.vec)
 desires.mat <- (init1)[rep.vec, ]
 availabilities.mat <- desires.mat != 0
 check.mat <- availabilities.mat & group.mat
@@ -80,6 +77,50 @@ score <- sum(ifelse(weight.slots.worked < init4[ , 3], (weight.slots.worked - in
        (init4[ , 2] - weight.slots.worked)/(init4[ , 2] - init4[ , 3]))) * work.opt.multiplier
 
 score = score + sum(desires.mat * work.mat)
+
+############################
+# get initial work.mat
+
+# random init
+work.mat <- 
+  rbind(replicate(sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE), times = sum(init2)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

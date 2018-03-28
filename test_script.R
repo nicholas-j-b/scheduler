@@ -36,7 +36,8 @@ shift.names <- sample(SHIFT_ID_LOWER:SHIFT_ID_UPPER, size = s)
 # 0 in cell expresses worker is unavailable for the shift
 # non 0 is the desire of the worker to do shift from LEAST_DESIRE to MOST_DESIRE
 
-init1 <- cbind(replicate(p, sample(c(rep(UNAVAILABLE, times = length(LEAST_DESIRE:MOST_DESIRE) * UNAVAILABLE_RATIO), LEAST_DESIRE:MOST_DESIRE), size = s, replace = TRUE)))
+init1 <- cbind(replicate(p, sample(c(rep(UNAVAILABLE, times = length(LEAST_DESIRE:MOST_DESIRE) * UNAVAILABLE_RATIO), 
+                                     LEAST_DESIRE:MOST_DESIRE), size = s, replace = TRUE))) # cbind does nothing?
 colnames(init1) <- paste0("P", 1:p)
 rownames(init1) <- shift.names
 
