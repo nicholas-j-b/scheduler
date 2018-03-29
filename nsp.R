@@ -1,8 +1,12 @@
 # Nurse Scheduling Problem
 
+# license?
+
 # warning when row in init3 is all false
 # optimums lie between min and max
 # all(init4[, 1] <= init4[,3] & init4[,2] >= init4[,3])
+# perhaps don't slit slots of same group eg slot1 needs 2 A's and a B
+# then slot1A needs two TRUEs in work.mat row and slot1B needs one
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -42,8 +46,8 @@ rownames(work.mat) <- slot.titles
 # check.mat is a lookup table that has value true when worker is available and in correct group
 
 # person availability / person in group using check.mat
-# generate at begin
-group.mat <- apply(init3, MARGIN = 1, FUN = function(x) x[slot.names]) # maybe R isn't so bad afterall
+# generate at begin (only once)
+group.mat <- apply(init3, MARGIN = 1, FUN = function(x) x[slot.names])
 times.vec <- unlist(lapply(rownames(init1), FUN = function(x) length(grep(x, slot.titles))))
 rep.vec <- rep(1:s, times = times.vec)
 desires.mat <- (init1)[rep.vec, ]
@@ -53,21 +57,30 @@ rownames(check.mat) <- slot.titles
 
 expanded.weights <- rep(weights, times = times.vec)
 
+############################
+# get initial work.mat
+
+# random init
+work.mat <- t(replicate(sum(init2), sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE)))
+
+
 #########################
 # check permissibility
+# a value between 0 and 1 : 1 is given only to permissible solutions
 
 # all entries in work.mat fit in check.mat
-sum(work.mat & check.mat) == sum(work.mat)
+fit.check.mat <- sum(work.mat & check.mat) / sum(work.mat)
 
 # check only 1 slot / person / shift
-all(apply(work.mat, MARGIN = 2, FUN = tapply, INDEX = rep.vec, sum) <= 1)
-
-# check min / max / optimal
-
-weight.slots.worked <- expanded.weights %*% work.mat
+fit.slot.lim <- sum(apply(work.mat, MARGIN = 2, FUN = tapply, INDEX = rep.vec, sum) <= 1) / (p * s)
 
 # check between min and max
-(init4[ ,1] < weight.slots.worked) & (weight.slots.worked < init4[ ,2])
+weight.slots.worked <- expanded.weights %*% work.mat
+fit.min.max <- sum((init4[ ,1] < weight.slots.worked) & (weight.slots.worked < init4[ ,2])) / p
+
+# permissibility rating
+permissibility <- (fit.check.mat + fit.slot.lim + fit.min.max) / 3
+
 
 ###########################
 # evaluate
@@ -78,12 +91,24 @@ score <- sum(ifelse(weight.slots.worked < init4[ , 3], (weight.slots.worked - in
 
 score = score + sum(desires.mat * work.mat)
 
-############################
-# get initial work.mat
 
-# random init
-work.mat <- 
-  rbind(replicate(sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE), times = sum(init2)))
+###########################
+# get neighbour
+
+# all
+
+# without swap
+
+row.to.slide <- 1 # vector, how this is generated will depend on control flow #TODO
+potential.cols <- (1:p)[-which(work.mat[row.to.slide, ])]
+# one by one set each entry in potential.cols to TRUE
+# implementation depends on control flow
+
+# with swap
+
+rows.to.swap <- 1:(length(slot.titles))
+# potential.swaps <- i #loop# :length(slot.titles)
+# swap
 
 
 
