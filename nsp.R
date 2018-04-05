@@ -113,8 +113,8 @@ potential.cols <- (1:p)[-which(work.mat[row.to.slide, ])]
 
 # with swap
 
-rows.to.swap <- 1:(length(slot.titles))
-# potential.swaps <- i #loop# :length(slot.titles)
+rows.to.swap <- 1:(sl)
+# potential.swaps <- i #loop# :sl
 # swap
 
 

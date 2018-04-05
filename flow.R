@@ -43,17 +43,16 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
     work.mat <- NULL #TODO
   }
   
-  check.permissibility <- function(){
+  check.permissibility <- function(work.mat, weight.slots.worked){
     # a value between 0 and 1 : 1 is given only to permissible solutions
     
     # all entries in work.mat fit in check.mat
-    fit.check.mat <- sum(work.mat & check.mat) / sum(work.mat)
+    fit.check.mat <- sum(work.mat & check.mat) / sl
     
     # check only 1 slot / person / shift
     fit.slot.lim <- sum(apply(work.mat, MARGIN = 2, FUN = tapply, INDEX = rep.vec, sum) <= 1) / (p * s)
     
     # check between min and max
-    weight.slots.worked <- expanded.weights %*% work.mat
     fit.min.max <- sum((init4[ ,1] < weight.slots.worked) & (weight.slots.worked < init4[ ,2])) / p
     
     # permissibility rating
@@ -66,7 +65,7 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
     return(permissibility)
   }
   
-  evaluate <- function(){
+  evaluate <- function(work.mat, weight.slots.worked){
     # evaluate
     
     # triangle density calculated with optimum
@@ -87,35 +86,54 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
   # LOCAL SEARCH
   if(algorithm == "local"){
     escape <- TRUE
-    neighbour.slide.vals <- numeric(sl * (p -1))
-    neighbour.swap.vals <- numeric(also)
+    neighbour.slide.vals <- numeric(sl * (p - 1))
+    neighbour.swap.vals <- numeric(sl * (sl - 1))
     while(escape){
       # set temp
-      work.temp <- work.mat
+      work.mat.temp <- work.mat
       
-      #get all neighbours
-      row.to.slide <- 1:sl
+      # get all neighbours
+      
+      #slides
       for(i in 1:sl){
         potential.cols <- (1:p)[-which(work.mat[i, ])]
         for(j in potential.cols){
+          # make slide
           new.row <- logical(p)
           new.row[j] <- TRUE
           work.temp[i, ] <- new.row
           
+          # check permissibility
+          weight.slots.worked <- expanded.weights %*% work.mat.temp
+          permiss <- permissibility(work.mat.temp, weight.slots.worked)
+          
+          # evaluate if necessary
+          if(permiss == 1){
+            neighbour.slide.vals[((i - 1) * p) + j] <- evaluate(work.mat.temp, weight.slots.worked)
+          }
         }
+        # reset row
+        work.mat.temp[i, ] <- work.mat[i, ]
       }
 
-      
-      
-      
-      
-      
-      
-      
       #swaps
-      rows.to.swap <- 1:(length(slot.titles))
-      # potential.swaps <- i #loop# :length(slot.titles)
-      # swap
+      for(i in 1:sl){
+        potential.rows <- (1:sl)[-i]
+        for(j in potential.rows){
+          work.mat.temp[c(i, j), ] <- work.mat[c(j, i), ]
+          
+          # check permissibility
+          weight.slots.worked <- expanded.weights %*% work.mat.temp
+          permiss <- permissibility(work.mat.temp, weight.slots.worked)
+          
+          # evaluate if necessary
+          if(permiss == 1){
+            neighbour.swap.vals[((i - 1) * sl) + j] <- evaluate(work.mat.temp, weight.slots.worked)
+          }
+        }
+        # reset rows
+        work.mat.temp[c(i, j), ] <- work.mat[c(i, j)]
+      }      
       
       
       
