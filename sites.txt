@@ -1,2 +1,10 @@
+# oop
+# function overloading "multiple method dispatching"
+https://developer.r-project.org/howMethodsWork.pdf
+https://www.r-project.org/conferences/useR-2004/Keynotes/Leisch.pdf
+
+# loading attaching
+# namespace
+# import export
 http://r-pkgs.had.co.nz/namespace.html
 

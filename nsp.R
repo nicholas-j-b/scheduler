@@ -26,10 +26,11 @@ load("~/ws-r/nsp/gen1.RData")
 p <- ncol(init1)
 s <- nrow(init1)
 g <- ncol(init2)
+sl <- sum(init2)
 
 # produce workable matrix
 
-work.mat <- matrix(data = FALSE, nrow = sum(init2), ncol = p)
+work.mat <- matrix(data = FALSE, nrow = sl, ncol = p)
 
 slot.names.list <- list()
 for(i in 1:s){
@@ -61,7 +62,9 @@ expanded.weights <- rep(weights, times = times.vec)
 # get initial work.mat
 
 # random init
-work.mat <- t(replicate(sum(init2), sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE)))
+work.mat <- t(replicate(sl, sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE)))
+
+# greedy init
 
 
 #########################
@@ -81,6 +84,8 @@ fit.min.max <- sum((init4[ ,1] < weight.slots.worked) & (weight.slots.worked < i
 # permissibility rating
 permissibility <- (fit.check.mat + fit.slot.lim + fit.min.max) / 3
 
+# consecutiveness #TODO
+
 
 ###########################
 # evaluate
@@ -90,6 +95,8 @@ score <- sum(ifelse(weight.slots.worked < init4[ , 3], (weight.slots.worked - in
        (init4[ , 2] - weight.slots.worked)/(init4[ , 2] - init4[ , 3]))) * work.opt.multiplier
 
 score = score + sum(desires.mat * work.mat)
+
+# spread
 
 
 ###########################
@@ -118,18 +125,47 @@ rows.to.swap <- 1:(length(slot.titles))
 
 
 
+control(){
+  # //fluff
+  
+  # method fluff
+  # set methods for eval and permiss
+  setGeneric("eval", function() standardGeneric("eval"))
+  
+  # init work.mat
+  case: init
+    random
+    work.mat <- random()
+    first
+    work.mat <- first()
+    greedy...
+  etc...
+  
+  if(k.rand.swaps){
+    neighbs <- k.rand.swap(k)
+  } else if (best.swap) {
+    neighbs <- best.swap
+  }
+  
+  case: eval
+    
+    
+}
 
 
 
 
 
+setGeneric("eval.test", function(x, y) standardGeneric("eval.test"))
+
+setMethod("eval.test", signature = signature(x = "logical"), definition = function(x, y) {print("it was a bool")})
+
+setMethod("eval.test", signature = signature(x = "numeric", y = "character"), definition = function(x, y) {print("it was a num!!")})
+
+setMethod("eval.test", signature = signature(y = "numeric"), definition = function(x, y) {print("it was a third thing!!")})
 
 
-
-
-
-
-
+eval.test(TRUE)
 
 
 

@@ -1,5 +1,7 @@
 # Nurse Scheduling Problem
 
+save.location = "~/ws-r/nsp/gen2.RData"
+
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
 LEAST_DESIRE <- 1
@@ -74,7 +76,7 @@ weights <- runif(s, min = SHIFT_WEIGHT_MIN, max = SHIFT_WEIGHT_MAX)
 names(weights) <- shift.names
 
 # save files for loading into program
-save(init1, init2, init3, init4, weights, file = "~/ws-r/nsp/gen1.RData")
+save(init1, init2, init3, init4, weights, file = save.location)
 
 
 
