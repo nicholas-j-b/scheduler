@@ -85,10 +85,10 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
   
   # LOCAL SEARCH
   if(algorithm == "local"){
-    escape <- TRUE
+    escape <- FALSE
     neighbour.slide.vals <- numeric(sl * (p - 1))
     neighbour.swap.vals <- numeric(sl * (sl - 1))
-    while(escape){
+    while(!escape){
       # set temp
       work.mat.temp <- work.mat
       
@@ -135,6 +135,31 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
         work.mat.temp[c(i, j), ] <- work.mat[c(i, j)]
       }      
       
+      best.slide <- max(neighbour.slide.vals)
+      best.swap <- max(neighbour.swap.vals)
+      
+      if(best.slide > best.swap){
+        best.pos <- which(neighbour.slide.vals == best.slide)
+        i <- (best.pos %/% (p - 1)) + 1
+        j <- best.pos %% (p - 1)
+        new.row <- logical(p)
+        new.row[j] <- TRUE
+        work.mat.new[i, ] <- new.row
+        if(best.slide > prev.best) {
+          escape <- TRUE
+          #TODO
+          # end loop conditions, return etc
+        }
+      } else {
+        best.pos <- which(neighbour.swap.vals == best.swap)
+        i <- (best.pos %/% (sl - 1)) + 1
+        j <- best.pos %% (sl - 1)
+        work.mat.new[c(i, j), ] <- work.mat[c(j, i), ]
+        if(best.swap > prev.best){
+          escape <- TRUE
+          #TODO
+        }
+      }
       
       
       
@@ -143,8 +168,8 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
   
   # SIMULATED ANNEALING
   else if (algorithm == "sim a"){
-    escape <- TRUE
-    while(escape){
+    escape <- FALSE
+    while(!escape){
       
     }
   }
@@ -157,7 +182,6 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
   
   
 }
-
 
 
 
