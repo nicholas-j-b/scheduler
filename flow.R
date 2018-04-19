@@ -1,7 +1,7 @@
 
 
 
-function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local", init.process = "random"){
+optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local", init.process = "random"){
   
   # generate size variables
   p <- ncol(init1)
@@ -33,8 +33,8 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
   
   work.mat <- switch(init.process,
     random = t(replicate(sl, sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE))),
-    random.permiss = #TODO,
-    greedy = #TODO,
+    #random.permiss = #TODO,
+    #greedy = #TODO,
     NULL  
   )
   
@@ -54,6 +54,10 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
     
     # check between min and max
     fit.min.max <- sum((init4[ ,1] < weight.slots.worked) & (weight.slots.worked < init4[ ,2])) / p
+    print("t")
+    print(fit.check.mat)
+    print(fit.slot.lim)
+    print(fit.min.max)
     
     # permissibility rating
     permissibility <- (fit.check.mat + fit.slot.lim + fit.min.max) / 3
@@ -88,25 +92,27 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
     escape <- FALSE
     neighbour.slide.vals <- numeric(sl * (p - 1))
     neighbour.swap.vals <- numeric(sl * (sl - 1))
+    work.mat.new <- work.mat
     while(!escape){
       # set temp
-      work.mat.temp <- work.mat
+      work.mat.temp <- work.mat.new
+      work.mat <- work.mat.new
+      print(work.mat)
       
       # get all neighbours
       
-      #slides
+      #slide
       for(i in 1:sl){
         potential.cols <- (1:p)[-which(work.mat[i, ])]
         for(j in potential.cols){
           # make slide
           new.row <- logical(p)
           new.row[j] <- TRUE
-          work.temp[i, ] <- new.row
+          work.mat.temp[i, ] <- new.row
           
           # check permissibility
           weight.slots.worked <- expanded.weights %*% work.mat.temp
-          permiss <- permissibility(work.mat.temp, weight.slots.worked)
-          
+          permiss <- check.permissibility(work.mat.temp, weight.slots.worked)
           # evaluate if necessary
           if(permiss == 1){
             neighbour.slide.vals[((i - 1) * p) + j] <- evaluate(work.mat.temp, weight.slots.worked)
@@ -124,7 +130,7 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
           
           # check permissibility
           weight.slots.worked <- expanded.weights %*% work.mat.temp
-          permiss <- permissibility(work.mat.temp, weight.slots.worked)
+          permiss <- check.permissibility(work.mat.temp, weight.slots.worked)
           
           # evaluate if necessary
           if(permiss == 1){
@@ -135,11 +141,19 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
         work.mat.temp[c(i, j), ] <- work.mat[c(i, j)]
       }      
       
+      print(1)
+      print(neighbour.slide.vals)
+      print(neighbour.swap.vals)
+      
       best.slide <- max(neighbour.slide.vals)
       best.swap <- max(neighbour.swap.vals)
       
+      print(2)
+      print(best.slide)
+      print(best.swap)
+      
       if(best.slide > best.swap){
-        best.pos <- which(neighbour.slide.vals == best.slide)
+        best.pos <- which(neighbour.slide.vals == best.slide)[1] #maybe pick one at random?
         i <- (best.pos %/% (p - 1)) + 1
         j <- best.pos %% (p - 1)
         new.row <- logical(p)
@@ -151,18 +165,20 @@ function(init1, init2, init3, init4, work.opt.multiplier = 1, algorithm = "local
           # end loop conditions, return etc
         }
       } else {
-        best.pos <- which(neighbour.swap.vals == best.swap)
+        best.pos <- which(neighbour.swap.vals == best.swap)[1] #maybe pick one at random?
+        print(3)
+        print(best.pos)
         i <- (best.pos %/% (sl - 1)) + 1
         j <- best.pos %% (sl - 1)
+        print(4)
+        print(i)
+        print(j)
         work.mat.new[c(i, j), ] <- work.mat[c(j, i), ]
         if(best.swap > prev.best){
           escape <- TRUE
           #TODO
         }
       }
-      
-      
-      
     }
   } 
   

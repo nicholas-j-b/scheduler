@@ -1,6 +1,6 @@
 # Nurse Scheduling Problem
 
-save.location = "~/ws-r/nsp/gen2.RData"
+save.location = "~/ws-r/nsp/gen3.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -22,7 +22,7 @@ MIN_MIN <- 2
 MIN_MAX <- 5
 ADD_MIN <- 12
 ADD_MAX <- 40
-UNAVAILABLE_RATIO <- .7 # .7 to 1 ratio of being unavailable
+UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
 
 # generate practice inputs
 
