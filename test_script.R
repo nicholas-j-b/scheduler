@@ -1,6 +1,6 @@
 # Nurse Scheduling Problem
 
-save.location = "~/ws-r/nsp/gen3.RData"
+save.location = "~/ws-r/nsp/gen7.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -22,6 +22,51 @@ MIN_MIN <- 2
 MIN_MAX <- 5
 ADD_MIN <- 12
 ADD_MAX <- 40
+UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
+
+# TESTING CONSTANTS gen5
+PEOPLE_LOWER <- 5
+PEOPLE_UPPER <- 7
+SHIFT_LOWER <- 4
+SHIFT_UPPER <- 6
+GROUP_LOWER <- 1
+GROUP_UPPER <- 3
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+MIN_MIN <- 1
+MIN_MAX <- 6
+ADD_MIN <- 35
+ADD_MAX <- 57
+UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
+
+# TESTING CONSTANTS gen6
+PEOPLE_LOWER <- 3
+PEOPLE_UPPER <- 5
+SHIFT_LOWER <- 2
+SHIFT_UPPER <- 4
+GROUP_LOWER <- 1
+GROUP_UPPER <- 3
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+MIN_MIN <- 1
+MIN_MAX <- 6
+ADD_MIN <- 35
+ADD_MAX <- 47
+UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
+
+# TESTING CONSTANTS gen7
+PEOPLE_LOWER <- 6
+PEOPLE_UPPER <- 7
+SHIFT_LOWER <- 2
+SHIFT_UPPER <- 4
+GROUP_LOWER <- 1
+GROUP_UPPER <- 3
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+MIN_MIN <- 1
+MIN_MAX <- 6
+ADD_MIN <- 35
+ADD_MAX <- 47
 UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
 
 # generate practice inputs
@@ -56,10 +101,14 @@ rownames(init2) <- shift.names
 # init3
 # bool matrix of colomns groups and rows 'workers'
 # specifying whether the 'worker' can do shifts of type [group]
+# random generator includes another group in which all workers are in to avoid
+# workers with no group
 
 init3 <- cbind(replicate(g, sample(c(TRUE, FALSE), size = p, replace = TRUE)))
-colnames(init3) <- paste0(LETTERS[1:g])
+init3 <- cbind(init3, TRUE)
+colnames(init3) <- paste0(LETTERS[1:(g+1)])
 rownames(init3) <- paste0("P", 1:p)
+
 
 # init4
 # matrix of rows 'workers'
