@@ -71,7 +71,7 @@ UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean v
 
 # generate practice inputs
 
-set.seed(1)
+set.seed(5)
 p <- sample(PEOPLE_LOWER:PEOPLE_UPPER, size = 1)
 s <- sample(SHIFT_LOWER:SHIFT_UPPER, size = 1)
 g <- sample(GROUP_LOWER:GROUP_UPPER, size = 1)
@@ -101,12 +101,11 @@ rownames(init2) <- shift.names
 # init3
 # bool matrix of colomns groups and rows 'workers'
 # specifying whether the 'worker' can do shifts of type [group]
-# random generator includes another group in which all workers are in to avoid
-# workers with no group
+# all are in group A to help generator create vaulable data
 
 init3 <- cbind(replicate(g, sample(c(TRUE, FALSE), size = p, replace = TRUE)))
-init3 <- cbind(init3, TRUE)
-colnames(init3) <- paste0(LETTERS[1:(g+1)])
+init3[ , 1] <- TRUE
+colnames(init3) <- paste0(LETTERS[1:g])
 rownames(init3) <- paste0("P", 1:p)
 
 
