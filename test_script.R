@@ -1,6 +1,6 @@
 # Nurse Scheduling Problem
 
-save.location = "~/ws-r/nsp/gen7.RData"
+save.location = "~/ws-r/nsp/gen9.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -54,7 +54,7 @@ ADD_MIN <- 35
 ADD_MAX <- 47
 UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
 
-# TESTING CONSTANTS gen7
+# TESTING CONSTANTS gen7 seed 5
 PEOPLE_LOWER <- 6
 PEOPLE_UPPER <- 7
 SHIFT_LOWER <- 2
@@ -69,9 +69,26 @@ ADD_MIN <- 35
 ADD_MAX <- 47
 UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
 
+# TESTING CONSTANTS gen9 seed 8
+PEOPLE_LOWER <- 3
+PEOPLE_UPPER <- 5
+SHIFT_LOWER <- 4
+SHIFT_UPPER <- 8
+GROUP_LOWER <- 2
+GROUP_UPPER <- 3
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+MIN_MIN <- 1
+MIN_MAX <- 6
+ADD_MIN <- 35
+ADD_MAX <- 47
+UNAVAILABLE_RATIO <- .1 # .7 to 1 ratio of being unavailable, high number mean very unavailable
+
+#gen 8 seed 7
+
 # generate practice inputs
 
-set.seed(5)
+set.seed(8)
 p <- sample(PEOPLE_LOWER:PEOPLE_UPPER, size = 1)
 s <- sample(SHIFT_LOWER:SHIFT_UPPER, size = 1)
 g <- sample(GROUP_LOWER:GROUP_UPPER, size = 1)

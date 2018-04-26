@@ -1,13 +1,13 @@
 
 
-load("~/ws-r/nsp/gen7.RData")
+load("~/ws-r/nsp/gen9.RData")
 
 
 
 optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1, 
                      algorithm = "simulated.annealing", init.process = "simulated.annealing", 
                      no.temperatures = 41, rand.gen.tolerance = .75,
-                     tolerance = .75){
+                     tolerance = .65){
   
   
   #------------------------------------------------------------------------------------------------
@@ -41,10 +41,11 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   check.mat <- availabilities.mat & group.mat
   rownames(check.mat) <- slot.titles
   expanded.weights <- rep(weights, times = times.vec)
+  print(check.mat)
   
   
   #------------------------------------------------------------------------------------------------
-  # create 'permissible' mat with local search
+  # generate initial work.mat
 
   gen.random.mat <- function(){
     work.mat <- t(replicate(sl, sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE)))
@@ -58,15 +59,11 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   gen.local.search <- function(){
     work.mat <- gen.random.mat()
-    # print("restult of gen.random.mat")
-    # print(work.mat)
     return(local.search(check.permissibility, work.mat))
   }
   
   gen.simulated.annealing <- function(){
     work.mat <- gen.random.mat()
-    # print("restult of gen.random.mat")
-    # print(work.mat)
     return(simulated.annealing(check.permissibility, work.mat))
   }
   
@@ -129,8 +126,8 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   evaluate <- function(work.mat, weight.slots.worked){
     # check permissibility
-    permissibility <- check.permissibility(work.mat, weight.slots.worked) < tolerance
-    if(permissibility){
+    permissibility <- check.permissibility(work.mat, weight.slots.worked)
+    if(permissibility < tolerance){
       return(0)
     }
     
@@ -157,13 +154,13 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   
   local.search <- function(eval.fun, work.mat){
+    print("begin local search")
     escape <- FALSE
     neighbour.slide.vals <- numeric(sl * (p - 1))
     neighbour.swap.vals <- numeric(sl * (sl - 1))
     work.mat.new <- work.mat
     prev.best <- 0
     while(!escape){
-      print("best so far")
       print(prev.best)
       # set temp
       work.mat.temp <- work.mat.new
@@ -172,9 +169,9 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
       # print(work.mat)
       
       # get all neighbours
-      print("-----------------------")
-      print(sl)
-      print(p)
+      # print("-----------------------")
+      # print(sl)
+      # print(p)
       #slide
       for(i in 1:sl){
         potential.cols <- (1:p)[-which(work.mat[i, ])]
@@ -227,10 +224,10 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
         }
       }      
       
-      print("neighbout.slide")
-      print(neighbour.slide.vals)
-      print("neighbour.swap")
-      print(neighbour.swap.vals)
+      # print("neighbout.slide")
+      # print(neighbour.slide.vals)
+      # print("neighbour.swap")
+      # print(neighbour.swap.vals)
       
       best.slide <- max(neighbour.slide.vals, na.rm = TRUE) # shouldn't be NAs!! bug.
       best.swap <- max(neighbour.swap.vals, na.rm = TRUE) # same ^^
@@ -293,6 +290,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   # takes an evaluation function and a matrix to be evaluated
   
   simulated.annealing <- function(eval.fun, work.mat){
+    print("begin simulated.annealing")
     neighbour.slide.vals <- numeric(sl * (p - 1))
     neighbour.swap.vals <- numeric(sl * (sl - 1))
     work.mat.new <- work.mat
@@ -300,7 +298,6 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     temp.func <- seq(100, 0, length.out = no.temperatures)
     bool.swap <- FALSE
     for(temperature in temp.func){
-        print("best so far")
         print(prev.best)
         # set temp
         work.mat.temp <- work.mat.new
@@ -387,7 +384,12 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
         j <- j + (j <= i)
         # print("i, j")
         # print(i)
-        # print
+        # print(j)
+        # print(chosen.swap.pos)
+        # print(p)
+        # print(s)
+        # print(g)
+        # print(sl)
         work.mat.new[c(i, j), ] <- work.mat[c(j, i), ]
         prev.best <- chosen
         bool.swap <- !bool.swap
@@ -428,6 +430,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   work.mat <- switch(algorithm,
     simulated.annealing = simulated.annealing(evaluate, work.mat),
+    local.search = local.search(evaluate, work.mat),
     NULL
   )
   
@@ -454,11 +457,11 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
 }
 
 
-optimise(init1, init2, init3, init4)
+optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
 
 
 
-
+# test data normally not solvable!
 
 
 
