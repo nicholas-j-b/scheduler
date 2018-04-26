@@ -30,6 +30,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   slot.ref.names <- rep(rownames(init2), times = rowSums(init2))
   slot.titles <- make.unique(paste0(slot.ref.names, slot.names))
   rownames(work.mat) <- slot.titles
+  work.mat.temp <- work.mat
   
   # establish check.mat (const)
   # check.mat is a lookup table that has value true where worker is available and in correct group
@@ -46,59 +47,59 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   #------------------------------------------------------------------------------------------------
   # generate initial work.mat
-
+  
   gen.random.mat <- function(){
     work.mat <- t(replicate(sl, sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE)))
     weight.slots.worked <- expanded.weights %*% work.mat
-    if(check.permissibility(work.mat, weight.slots.worked) < rand.gen.tolerance){
+    if(check.permissibility(weight.slots.worked) < rand.gen.tolerance){
       work.mat <- gen.random.mat()
     } else {
-    return(work.mat)
+      return(work.mat)
     }
   }
   
   gen.local.search <- function(){
     work.mat <- gen.random.mat()
-    return(local.search(check.permissibility, work.mat))
+    return(local.search(check.permissibility))
   }
   
   gen.simulated.annealing <- function(){
     work.mat <- gen.random.mat()
-    return(simulated.annealing(check.permissibility, work.mat))
+    return(simulated.annealing(check.permissibility))
   }
   
   
   #------------------------------------------------------------------------------------------------
   # a function to check the permissibility of a matrix
   
-  check.permissibility <- function(work.mat, weight.slots.worked){
+  check.permissibility <- function(weight.slots.worked){
     # a value between 0 and 1 : 1 is given only to permissible solutions
     
     # all entries in work.mat fit in check.mat
-    fit.check.mat <- sum(work.mat & check.mat) / sl
+    fit.check.mat <- sum(work.mat.temp & check.mat) / sl
     
     # check only 1 slot / person / shift
-    fit.slot.lim <- sum(apply(work.mat, MARGIN = 2, FUN = tapply, INDEX = rep.vec, sum) <= 1) / (p * s)
-
+    fit.slot.lim <- sum(apply(work.mat.temp, MARGIN = 2, FUN = tapply, INDEX = rep.vec, sum) <= 1) / (p * s)
+    
     # check between min and max
     fit.min.max <- sum((init4[ ,1] < weight.slots.worked) & (weight.slots.worked < init4[ ,2])) / p
-
+    
     if(is.na(fit.check.mat)){
       print("fit.check.mat NA")
-      print(work.mat)
+      print(work.mat.temp)
       print(weight.slots.worked)
     }
     if(is.na(fit.slot.lim)){
       print("fit.slot.lim NA")
-      print(work.mat)
+      print(work.mat.temp)
       print(weight.slots.worked)
     }
     if(is.na(fit.min.max)){
       print("fit.min.max NA")
-      print(work.mat)
+      print(work.mat.temp)
       print(weight.slots.worked)
     }
-    # print(work.mat)
+    # print(work.mat.temp)
     
     # debug
     # print(check.mat)
@@ -106,7 +107,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     # print(fit.check.mat)
     # print(fit.slot.lim)
     # print(fit.min.max)
-    # print(sum(work.mat & check.mat))
+    # print(sum(work.mat.temp & check.mat))
     # print(sl)
     # print("p")
     # print(p)
@@ -126,9 +127,9 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   #------------------------------------------------------------------------------------------------
   # a function to find the value of a given matrix
   
-  evaluate <- function(work.mat, weight.slots.worked){
+  evaluate <- function(weight.slots.worked){
     # check permissibility
-    permissibility <- check.permissibility(work.mat, weight.slots.worked)
+    permissibility <- check.permissibility(weight.slots.worked)
     if(permissibility < tolerance){
       return(0)
     }
@@ -140,7 +141,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
                         (weight.slots.worked - init4[ , 1])/(init4[ , 3] - init4[ , 1]), 
                         (init4[ , 2] - weight.slots.worked)/(init4[ , 2] - init4[ , 3]))) * work.opt.multiplier
     
-    score = score + sum(desires.mat * work.mat)
+    score = score + sum(desires.mat * work.mat.temp)
     
     # spread
     # test how well the shifts are spread across the timeframe
@@ -149,13 +150,11 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     return(score * permissibility)
   }
   
-  
   #------------------------------------------------------------------------------------------------
   # a function to use the local search algorithm
   # takes an evaluation function and a matrix to be evaluated
   
-  
-  local.search <- function(eval.fun, work.mat){
+  local.search <- function(eval.fun){
     print("begin local search")
     escape <- FALSE
     neighbour.slide.vals <- numeric(sl * (p - 1))
@@ -187,18 +186,14 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
           
           # check permissibility
           weight.slots.worked <- expanded.weights %*% work.mat.temp
-
-          neighbour.slide.vals[((i - 1) * (p - 1)) + which(j == potential.cols)] <- eval.fun(work.mat.temp, weight.slots.worked)
-
+          
+          neighbour.slide.vals[((i - 1) * (p - 1)) + which(j == potential.cols)] <- eval.fun(weight.slots.worked)
+          
         }
         # reset row
         work.mat.temp[i, ] <- work.mat[i, ]
       }
-      
-      # print("finish slides")
-      
-      
-      
+
       #swaps
       for(i in 1:sl){
         # print("in swaps")
@@ -212,9 +207,9 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
           
           # check permissibility
           weight.slots.worked <- expanded.weights %*% work.mat.temp
-          neighbour.swap.vals[((i - 1) * (sl - 1)) + j - (j > i)] <- eval.fun(work.mat.temp, weight.slots.worked)
+          neighbour.swap.vals[((i - 1) * (sl - 1)) + j - (j > i)] <- eval.fun(weight.slots.worked)
           
-      
+          
           # reset rows
           # print("before workmat reset")
           # print(work.mat.temp)
@@ -291,115 +286,115 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   # a function to use the simulated annealing algorithm
   # takes an evaluation function and a matrix to be evaluated
   
-  simulated.annealing <- function(eval.fun, work.mat){
+  simulated.annealing <- function(eval.fun){
     print("begin simulated.annealing")
     neighbour.slide.vals <- numeric(sl * (p - 1))
     neighbour.swap.vals <- numeric(sl * (sl - 1))
     work.mat.new <- work.mat
     prev.best <- 0
+    # set temp
     temp.func <- seq(100, 0, length.out = no.temperatures)
     bool.swap <- FALSE
     for(temperature in temp.func){
-        print(prev.best)
-        # set temp
-        work.mat.temp <- work.mat.new
-        work.mat <- work.mat.new
-        # print("in sim.an, beginning of loop")
-        # print(work.mat)
-        
-        # get all neighbours
-        if(bool.swap){
-          #slide
-          for(i in 1:sl){
-            potential.cols <- (1:p)[-which(work.mat[i, ])]
-            for(j in potential.cols){
-              # make slide
-              work.mat.temp[i, ] <- logical(p)
-              work.mat.temp[i, j] <- TRUE
-              
-              # check permissibility
-              weight.slots.worked <- expanded.weights %*% work.mat.temp
-              
-              neighbour.slide.vals[((i - 1) * (p - 1)) + which(j == potential.cols)] <- eval.fun(work.mat.temp, weight.slots.worked)
-              
-            }
-            # reset row
-            work.mat.temp[i, ] <- work.mat[i, ]
+      print(prev.best)
+      work.mat.temp <- work.mat.new
+      work.mat <- work.mat.new
+      # print("in sim.an, beginning of loop")
+      # print(work.mat)
+      
+      # get all neighbours
+      if(bool.swap){
+        #slide
+        for(i in 1:sl){
+          potential.cols <- (1:p)[-which(work.mat[i, ])]
+          for(j in potential.cols){
+            # make slide
+            work.mat.temp[i, ] <- logical(p)
+            work.mat.temp[i, j] <- TRUE
+            
+            # check permissibility
+            weight.slots.worked <- expanded.weights %*% work.mat.temp
+            
+            neighbour.slide.vals[((i - 1) * (p - 1)) + which(j == potential.cols)] <- eval.fun(weight.slots.worked)
+            
           }
-          
-          
-          best.slides <- order(neighbour.slide.vals, decreasing = TRUE)[1:10]
-          chosen.slide.pos <- sample(x = best.slides, size = 1, prob = (1:10)^(temperature/25 - 4))
-          chosen <- neighbour.slide.vals[chosen.slide.pos]
-          
-          i <- (chosen.slide.pos %/% (p - 1)) + 1
-          j <- chosen.slide.pos %% (p - 1)
-          j <- (1:p)[-which(work.mat[i, ])][j]
-          work.mat.new[i, ] <- logical(p)
-          work.mat.new[i, j] <- TRUE
-          prev.best <- chosen
-          
-          
-        } else {
-  
-          #swaps
-          for(i in 1:sl){
-            # print("in swaps")
-            # print(i)
-            # print(work.mat.temp)
-            potential.rows <- (1:sl)[-i]
-            # print("potenial.rows")
-            # print(potential.rows)
-            for(j in potential.rows){
-              work.mat.temp[c(i, j), ] <- work.mat[c(j, i), ]
-              
-              # check permissibility
-              weight.slots.worked <- expanded.weights %*% work.mat.temp
-              neighbour.swap.vals[((i - 1) * (sl - 1)) + j - (j > i)] <- eval.fun(work.mat.temp, weight.slots.worked)
-              
-              
-              # reset rows
-              # print("before workmat reset")
-              # print(work.mat.temp)
-              work.mat.temp[c(i, j), ] <- work.mat[c(i, j), ]
-              # print("after")
-              # print(work.mat.temp)
-              # print("work.mat")
-              # print(work.mat)
-            }
-          }      
+          # reset row
+          work.mat.temp[i, ] <- work.mat[i, ]
         }
-        # print("neighbout.slide")
-        # print(neighbour.slide.vals)
-        # print("neighbour.swap")
-        # print(neighbour.swap.vals)
         
-        best.swaps <- order(neighbour.swap.vals, decreasing = TRUE)[1:10]
-        chosen.swap.pos <- sample(x = best.swaps, size = 1, prob = (1:10)^(temperature/25 - 4))
-        chosen <- neighbour.swap.vals[chosen.swap.pos]
-
-
-        # print("best pos")
-        # print(best.pos)
-        i <- (chosen.swap.pos %/% (sl - 1)) + 1
-        j <- chosen.swap.pos %% (sl - 1)
-        j <- j + (j <= i)
-        # print("i, j")
-        # print(i)
-        # print(j)
-        # print(chosen.swap.pos)
-        # print(p)
-        # print(s)
-        # print(g)
-        # print(sl)
-        work.mat.new[c(i, j), ] <- work.mat[c(j, i), ]
+        
+        best.slides <- order(neighbour.slide.vals, decreasing = TRUE)[1:10]
+        chosen.slide.pos <- sample(x = best.slides, size = 1, prob = (1:10)^(temperature/25 - 4))
+        chosen <- neighbour.slide.vals[chosen.slide.pos]
+        
+        i <- (chosen.slide.pos %/% (p - 1)) + 1
+        j <- chosen.slide.pos %% (p - 1)
+        j <- (1:p)[-which(work.mat[i, ])][j]
+        work.mat.new[i, ] <- logical(p)
+        work.mat.new[i, j] <- TRUE
         prev.best <- chosen
-        bool.swap <- !bool.swap
+        
+        
+      } else {
+        
+        #swaps
+        for(i in 1:sl){
+          # print("in swaps")
+          # print(i)
+          # print(work.mat.temp)
+          potential.rows <- (1:sl)[-i]
+          # print("potenial.rows")
+          # print(potential.rows)
+          for(j in potential.rows){
+            work.mat.temp[c(i, j), ] <- work.mat[c(j, i), ]
+            
+            # check permissibility
+            weight.slots.worked <- expanded.weights %*% work.mat.temp
+            neighbour.swap.vals[((i - 1) * (sl - 1)) + j - (j > i)] <- eval.fun(work.mat.temp, weight.slots.worked)
+            
+            
+            # reset rows
+            # print("before workmat reset")
+            # print(work.mat.temp)
+            work.mat.temp[c(i, j), ] <- work.mat[c(i, j), ]
+            # print("after")
+            # print(work.mat.temp)
+            # print("work.mat")
+            # print(work.mat)
+          }
+        }      
       }
-      return(work.mat)
+      # print("neighbout.slide")
+      # print(neighbour.slide.vals)
+      # print("neighbour.swap")
+      # print(neighbour.swap.vals)
+      
+      best.swaps <- order(neighbour.swap.vals, decreasing = TRUE)[1:10]
+      chosen.swap.pos <- sample(x = best.swaps, size = 1, prob = (1:10)^(temperature/25 - 4))
+      chosen <- neighbour.swap.vals[chosen.swap.pos]
+      
+      
+      # print("best pos")
+      # print(best.pos)
+      i <- (chosen.swap.pos %/% (sl - 1)) + 1
+      j <- chosen.swap.pos %% (sl - 1)
+      j <- j + (j <= i)
+      # print("i, j")
+      # print(i)
+      # print(j)
+      # print(chosen.swap.pos)
+      # print(p)
+      # print(s)
+      # print(g)
+      # print(sl)
+      work.mat.new[c(i, j), ] <- work.mat[c(j, i), ]
+      prev.best <- chosen
+      bool.swap <- !bool.swap
     }
-      
-      
+    return(work.mat)
+  }
+  
+  
   
   
   
@@ -423,17 +418,17 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   
   work.mat <- switch(init.process,
-    random = gen.random.mat(),
-    simulated.annealing = gen.simulated.annealing(),
-    local.search = gen.local.search(),
-    #greedy = #TODO,
-    NULL  
+                     random = gen.random.mat(),
+                     simulated.annealing = gen.simulated.annealing(),
+                     local.search = gen.local.search(),
+                     #greedy = #TODO,
+                     NULL  
   )
   
   work.mat <- switch(algorithm,
-    simulated.annealing = simulated.annealing(evaluate, work.mat),
-    local.search = local.search(evaluate, work.mat),
-    NULL
+                     simulated.annealing = simulated.annealing(evaluate, work.mat),
+                     local.search = local.search(evaluate, work.mat),
+                     NULL
   )
   
   
@@ -442,14 +437,14 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   #   work.mat <- NULL #TODO
   # }
   
-
+  
   
   #TODO strictness?
   
-
-
   
-
+  
+  
+  
   
   
   
