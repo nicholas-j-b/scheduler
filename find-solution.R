@@ -1,8 +1,8 @@
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
-                     algorithm = "simulated.annealing", init.process = "simulated.annealing", 
-                     no.temperatures = 81, rand.gen.tolerance = .65,
-                     tolerance = .65, greedy.limit = 350,
-                     num.neighbours.considered = 10, temp.exponent = 4){
+                          algorithm = "simulated.annealing", init.process = "simulated.annealing", 
+                          no.temperatures = 81, rand.gen.tolerance = .65,
+                          tolerance = .65, greedy.limit = 350,
+                          num.neighbours.considered = 10, temp.exponent = 4){
   #------------------------------------------------------------------------------------------------
   # arguments
   
@@ -20,7 +20,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # init3
   # bool matrix with colomns of groups and rows 'workers'
   # specifying whether the 'worker' can do shifts of type [group]
-
+  
   # init4
   # matrix of rows 'workers'
   # coloumns min, max, optimal total worked for time period
@@ -32,7 +32,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   
   # work.opt.multiplier
   # number indicating the importance of the preferences is init1
-
+  
   # algorithm
   # string - algorithm for finding solution, can be "simulated.annealing" or "local.search"
   # algorithm tests against 'evaluate' function
@@ -64,7 +64,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # a large number indicates 'simulated.annealing' will often choose a better option
   # lower numbers involve more chance, especially noticeable temperatures drop
   
-    
+  
   #------------------------------------------------------------------------------------------------
   # initialise function
   
@@ -101,7 +101,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   work$check.mat <- availabilities.mat & group.mat
   rownames(work$check.mat) <- slot.titles
   work$expanded.weights <- rep(weights, times = times.vec)
-
+  
   #------------------------------------------------------------------------------------------------
   # generate initial mat with chosen function
   
@@ -208,7 +208,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
                         (init4[ , 2] - work$weight.slots.worked)/(init4[ , 2] - init4[ , 3]))) * work.opt.multiplier
     
     score = score + sum(work$desires.mat * work$mat)
-
+    
     return(score * permissibility)
   }
   
@@ -225,7 +225,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     while(!escape){
       # update copy
       work$mat.copy <- work$mat
-
+      
       # evaluate all possible slides
       for(i in 1:sl){
         potential.cols <- (1:p)[-which(work$mat[i, ])]
@@ -241,7 +241,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
         # reset row
         work$mat[i, ] <- work$mat.copy[i, ]
       }
-
+      
       # evaluate all possible swaps
       for(i in 1:sl){
         potential.rows <- (1:sl)[-i]
@@ -252,16 +252,16 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
           # store score
           work$weight.slots.worked <- work$expanded.weights %*% work$mat
           neighbour.swap.vals[i, j] <- eval.fun()
-
+          
           #reset row
           work$mat[c(i, j), ] <- work$mat.copy[c(i, j), ]
         }
       }      
-
+      
       # compare to find best neighbour
       best.slide <- max(neighbour.slide.vals, na.rm = TRUE) 
       best.swap <- max(neighbour.swap.vals, na.rm = TRUE)
-
+      
       if(best.slide > best.swap){
         if(best.slide <= prev.best) {
           # no improvement can be made
@@ -288,10 +288,10 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
         else{
           # save swap
           chosen.swap.pos <- which(neighbour.swap.vals == best.swap)[1]
-
+          
           i <- ((chosen.swap.pos - 1) %% sl) + 1
           j <- ((chosen.swap.pos - 1) %/% sl) + 1
- 
+          
           work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
           
           # update previous best
@@ -364,7 +364,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
             work$mat[c(i, j), ] <- work$mat.copy[c(i, j), ]
           }
         }
-      
+        
         # find best swaps, chose randomly from them
         best.swaps <- order(neighbour.swap.vals, decreasing = TRUE)[1:num.neighbours.considered]
         chosen.swap.pos <- sample(x = best.swaps, size = 1, 
@@ -376,7 +376,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
         j <- ((chosen.swap.pos - 1) %/% sl) + 1
         work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
       }
-
+      
       # update previous best and prepare to alternate between swaps and slides
       prev.best <- chosen
       bool.swap <- !bool.swap
@@ -389,18 +389,18 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   
   # initialise mat using chosen algorithm
   switch(init.process,
-        random = gen.random(),
-        simulated.annealing = gen.simulated.annealing(),
-        local.search = gen.local.search(),
-        greedy = gen.greedy(),
-        NULL
+         random = gen.random(),
+         simulated.annealing = gen.simulated.annealing(),
+         local.search = gen.local.search(),
+         greedy = gen.greedy(),
+         NULL
   )
   
   # optimise using chosen function
   score <- switch(algorithm,
-        simulated.annealing = simulated.annealing(evaluate),
-        local.search = local.search(evaluate),
-        NULL
+                  simulated.annealing = simulated.annealing(evaluate),
+                  local.search = local.search(evaluate),
+                  NULL
   )
   
   # return score and solution
