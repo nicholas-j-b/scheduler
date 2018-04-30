@@ -7,7 +7,7 @@ load("~/ws-r/nsp/gen2_2.RData")
 optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1, 
                      algorithm = "simulated.annealing", init.process = "simulated.annealing", 
                      no.temperatures = 41, rand.gen.tolerance = .65,
-                     tolerance = .65){
+                     tolerance = .65, num.random.gens = 1000){
   
   
   #------------------------------------------------------------------------------------------------
@@ -56,14 +56,12 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     work$weight.slots.worked <- work$expanded.weights %*% work$mat
     if(check.permissibility() < rand.gen.tolerance){
       work$mat <- gen.random.mat()
-    } else {
-      return(work$mat)
     }
   }
   
   gen.local.search <- function(){
     work$mat <- gen.random.mat()
-    return(local.search(check.permissibility))
+    work$mat <- local.search(check.permissibility)
   }
   
   gen.simulated.annealing <- function(){
@@ -72,7 +70,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   }
   
   gen.greedy <- function(){
-    work$mat <- matrix(0, ncol = p, nrow = sl)
+    work$mat <- matrix(FALSE, ncol = p, nrow = sl)
     for(i in 1:sl){
       if(i < 1){
         stop("greedy algorithm has failed, try another init method")
@@ -87,7 +85,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
         if(sum(apply(work$mat, MARGIN = 2, FUN = tapply, INDEX = work$rep.vec, sum) <= 1) == (p * s)){
           # check shifts worked less than max for person
           work$weight.slots.worked <- work$expanded.weights %*% work$mat
-          if(work$weight.slots.worked < init4[ ,2]){
+          if(all(work$weight.slots.worked < init4[ ,2])){
             break
           }
         }
@@ -119,6 +117,22 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     
     # permissibility rating
     permissibility <- (fit.check.mat + fit.slot.lim + fit.min.max) / 3
+    
+    # debug
+    # print(work$check.mat)
+    # print("fit ratings")
+    # print(fit.check.mat)
+    # print(fit.slot.lim)
+    # print(fit.min.max)
+    # print(sum(work$mat & work$check.mat))
+    # print("sl")
+    # print(sl)
+    # print("p")
+    # print(p)
+    # print(init4[ , 1])
+    # print(init4[ , 2])
+    # print(work$weight.slots.worked)
+    # stop("ok")
     
     # consecutiveness 
     # how many shifts can be done consecutively 
@@ -164,6 +178,16 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     neighbour.swap.vals <- numeric(sl * (sl - 1))
     prev.best <- 0
     while(!escape){
+      #
+      #
+      if(!all(rowSums(work$mat) == 1)){
+        print(work$mat)
+        stop("bad")
+      } else {
+        print("not bad")
+      }
+      #
+      #
       print(prev.best)
       # set temp
       work$mat.copy <- work$mat
@@ -238,7 +262,6 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
         }
       }
     }
-    return(work$mat)
   } 
   
   
@@ -248,14 +271,25 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   simulated.annealing <- function(eval.fun){
     print("begin simulated.annealing")
-    neighbour.slide.vals <- numeric(sl * (p - 1))
-    neighbour.swap.vals <- numeric(sl * (sl - 1))
+    print(work$mat)
+    neighbour.slide.vals <- matrix(0, ncol = p, nrow = sl)
+    neighbour.swap.vals <- matrix(0, ncol = sl, nrow = sl)
     work$mat.copy <- work$mat
     prev.best <- 0
     # set temp
     temp.func <- seq(100, 0, length.out = no.temperatures)
     bool.swap <- FALSE
     for(temperature in temp.func){
+      #
+      #
+      if(!all(rowSums(work$mat) == 1)){
+        print(work$mat)
+        stop("bad")
+      } else {
+        print("not bad")
+      }
+      #
+      #
       print(prev.best)
       
       work$mat.copy <- work$mat
@@ -273,7 +307,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
             # check permissibility
             work$weight.slots.worked <- work$expanded.weights %*% work$mat
             
-            neighbour.slide.vals[((i - 1) * (p - 1)) + which(j == potential.cols)] <- eval.fun()
+            neighbour.slide.vals[i, j] <- eval.fun()
             
           }
           # reset row
@@ -285,9 +319,18 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
         chosen.slide.pos <- sample(x = best.slides, size = 1, prob = (1:10)^(temperature/25 - 4))
         chosen <- neighbour.slide.vals[chosen.slide.pos]
         
-        i <- (chosen.slide.pos %/% (p - 1)) + 1
-        j <- chosen.slide.pos %% (p - 1)
-        j <- (1:p)[-which(work$mat[i, ])][j]
+        print("slide")
+        i <- ((chosen.slide.pos - 1) %% sl) + 1
+        j <- ((chosen.slide.pos - 1) %/% sl) + 1
+        # print("above")
+        # print(chosen.slide.pos)
+        # print(i)
+        # print(j)
+        # print(work$mat)
+        # print(best.slides)
+        # print(chosen)
+        # j <- (1:p)[-which(work$mat[i, ])][j]
+        # print("below")
         work$mat[i, ] <- logical(p)
         work$mat[i, j] <- TRUE
         prev.best <- chosen
@@ -302,30 +345,31 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
             
             # check permissibility
             work$weight.slots.worked <- work$expanded.weights %*% work$mat
-            neighbour.swap.vals[((i - 1) * (sl - 1)) + j - (j > i)] <- eval.fun()
+            neighbour.swap.vals[i, j] <- eval.fun()
             
             # reset rows
             work$mat[c(i, j), ] <- work$mat.copy[c(i, j), ]
 
           }
-        }      
+        }
+        print("swap")
+
+      
+        best.swaps <- order(neighbour.swap.vals, decreasing = TRUE)[1:10]
+        chosen.swap.pos <- sample(x = best.swaps, size = 1, prob = (1:10)^(temperature/25 - 4))
+        chosen <- neighbour.swap.vals[chosen.swap.pos]
+        
+        i <- ((chosen.swap.pos - 1) %% sl) + 1
+        j <- ((chosen.swap.pos - 1) %/% sl) + 1
+        
+        
+
+        work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
       }
 
-      
-      best.swaps <- order(neighbour.swap.vals, decreasing = TRUE)[1:10]
-      chosen.swap.pos <- sample(x = best.swaps, size = 1, prob = (1:10)^(temperature/25 - 4))
-      chosen <- neighbour.swap.vals[chosen.swap.pos]
-      
-
-      i <- (chosen.swap.pos %/% (sl - 1)) + 1
-      j <- chosen.swap.pos %% (sl - 1)
-      j <- j + (j <= i)
-
-      work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
       prev.best <- chosen
       bool.swap <- !bool.swap
     }
-    return(work$mat)
   }
   
   
@@ -338,18 +382,18 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   
   
   
-  work$mat <- switch(init.process,
-                     random = gen.random.mat(),
-                     simulated.annealing = gen.simulated.annealing(),
-                     local.search = gen.local.search(),
-                     greedy = gen.greedy(),
-                     NULL  
+  switch(init.process,
+        random = gen.random.mat(),
+        simulated.annealing = gen.simulated.annealing(),
+        local.search = gen.local.search(),
+        greedy = gen.greedy(),
+        NULL  
   )
   
-  work$mat <- switch(algorithm,
-                     simulated.annealing = simulated.annealing(evaluate),
-                     local.search = local.search(evaluate),
-                     NULL
+  switch(algorithm,
+        simulated.annealing = simulated.annealing(evaluate),
+        local.search = local.search(evaluate),
+        NULL
   )
   
   
@@ -368,10 +412,11 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
 }
 
 
-# optimise(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing")
+optimise(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing")
 
-optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
+# optimise(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
 
+# optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
 
 
 
