@@ -60,12 +60,12 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   }
   
   gen.local.search <- function(){
-    work$mat <- gen.random.mat()
-    work$mat <- local.search(check.permissibility)
+    gen.random.mat()
+    local.search(check.permissibility)
   }
   
   gen.simulated.annealing <- function(){
-    work$mat <- gen.random.mat()
+    gen.random.mat()
     return(simulated.annealing(check.permissibility))
   }
   
@@ -174,8 +174,8 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   local.search <- function(eval.fun){
     print("begin local search")
     escape <- FALSE
-    neighbour.slide.vals <- numeric(sl * (p - 1))
-    neighbour.swap.vals <- numeric(sl * (sl - 1))
+    neighbour.slide.vals <- matrix(0, ncol = p, nrow = sl)
+    neighbour.swap.vals <- matrix(0, ncol = sl, nrow = sl)
     prev.best <- 0
     while(!escape){
       #
@@ -203,7 +203,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
           # check permissibility
           work$weight.slots.worked <- work$expanded.weights %*% work$mat
           
-          neighbour.slide.vals[((i - 1) * (p - 1)) + which(j == potential.cols)] <- eval.fun()
+          neighbour.slide.vals[i, j] <- eval.fun()
           
         }
         # reset row
@@ -219,45 +219,48 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
           
           # check permissibility
           work$weight.slots.worked <- work$expanded.weights %*% work$mat
-          neighbour.swap.vals[((i - 1) * (sl - 1)) + j - (j > i)] <- eval.fun()
+          neighbour.swap.vals[i, j] <- eval.fun()
 
           work$mat[c(i, j), ] <- work$mat.copy[c(i, j), ]
 
         }
       }      
 
-      best.slide <- max(neighbour.slide.vals, na.rm = TRUE) # shouldn't be NAs!! bug.
-      best.swap <- max(neighbour.swap.vals, na.rm = TRUE) # same ^^
+      best.slide <- max(neighbour.slide.vals, na.rm = TRUE) 
+      best.swap <- max(neighbour.swap.vals, na.rm = TRUE)
 
       
       if(best.slide > best.swap){
-        best.pos <- which(neighbour.slide.vals == best.slide)[1] #maybe pick one at random?
-        i <- (best.pos %/% (p - 1)) + 1
-        j <- best.pos %% (p - 1)
-        j <- (1:p)[-which(work$mat[i, ])][j]
+        
 
-        work$mat[i, ] <- logical(p)
-        work$mat[i, j] <- TRUE
+
         if(best.slide <= prev.best) {
           escape <- TRUE
-          #TODO
-          # end loop conditions, return etc
         }
         else{
+          chosen.slide.pos <- which(neighbour.slide.vals == best.slide)[1]
+          
+          i <- ((chosen.slide.pos - 1) %% sl) + 1
+          j <- ((chosen.slide.pos - 1) %/% sl) + 1
+          
+          work$mat[i, ] <- logical(p)
+          work$mat[i, j] <- TRUE
+          
           prev.best <- best.slide
         }
       } else {
-        best.pos <- which(neighbour.swap.vals == best.swap)[1] #maybe pick one at random?
-        i <- (best.pos %/% (sl - 1)) + 1
-        j <- best.pos %% (sl - 1)
-        j <- j + (j <= i)
-
-        work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
         if(best.swap <= prev.best){
           escape <- TRUE
-          #TODO
         }
         else{
+          chosen.swap.pos <- which(neighbour.swap.vals == best.swap)[1]
+
+          i <- ((chosen.swap.pos - 1) %% sl) + 1
+          j <- ((chosen.swap.pos - 1) %/% sl) + 1
+ 
+          work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
+          
+          
           prev.best <- best.swap
         }
       }
@@ -322,15 +325,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
         print("slide")
         i <- ((chosen.slide.pos - 1) %% sl) + 1
         j <- ((chosen.slide.pos - 1) %/% sl) + 1
-        # print("above")
-        # print(chosen.slide.pos)
-        # print(i)
-        # print(j)
-        # print(work$mat)
-        # print(best.slides)
-        # print(chosen)
-        # j <- (1:p)[-which(work$mat[i, ])][j]
-        # print("below")
+
         work$mat[i, ] <- logical(p)
         work$mat[i, j] <- TRUE
         prev.best <- chosen
@@ -414,9 +409,11 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
 
 optimise(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing")
 
-# optimise(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
+optimise(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
 
-# optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
+optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
+
+optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "simulated.annealing")
 
 
 
