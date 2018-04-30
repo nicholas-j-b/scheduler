@@ -1,3 +1,9 @@
+# Code written by Nicholas Brooking for the purpose of supplementing a submission
+# for the Bachelor Thesis for a Bachelor of Statistics at the University of Vienna
+
+# A function that assists the solving of an NSP
+# For more information see the README attached with this download
+
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
                           algorithm = "simulated.annealing", init.process = "simulated.annealing", 
                           no.temperatures = 81, rand.gen.tolerance = .65,
@@ -64,6 +70,57 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # a large number indicates 'simulated.annealing' will often choose a better option
   # lower numbers involve more chance, especially noticeable temperatures drop
   
+  #------------------------------------------------------------------------------------------------
+  # checks
+  
+  if(!is.matrix(init1)){
+    stop("init1 must be matrix")
+  }
+  if(!is.matrix(init2)){
+    stop("init2 must be matrix")
+  }
+  if(!is.matrix(init3)){
+    stop("init3 must be matrix")
+  }
+  if(!is.matrix(init4)){
+    stop("init4 must be matrix")
+  }
+  if(!is.vector(weights)){
+    stop("weights must be vector")
+  }
+  if(nrow(init1) != nrow(init2)){
+    stop("init1 and init2 row lengths differ")
+  }
+  if(ncol(init1) != nrow(init3)){
+    stop("Number of columns in init1 must equal number of rows in init3")
+  }
+  if(nrow(init4) != nrow(init3)){
+    stop("Number of rows in init3 must equal number of rows in init4")
+  }
+  if(ncol(init4) != 3){
+    stop("Number of columns in init4 must be 3: Minimum, Maximum, Optimal")
+  }
+  if(length(weights) != nrow(init1)){
+    stop("Lenght of weights must equal number of rows in init1")
+  }
+  if(!all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= init4[ ,2])){
+    stop("Problem in init4: comparison all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= init4[ ,2]) failed\n init4: Minimum, Maximum, Optimal")
+  }
+  if(!is.numeric(init1)){
+    stop("init1 must be numeric")
+  }
+  if(!is.numeric(init2)){
+    stop("init2 must be numeric")
+  }
+  if(!is.logical(init3)){
+    stop("init1 must be logical")
+  }
+  if(!is.numeric(init4)){
+    stop("init4 must be numeric")
+  }
+  if(!is.numeric(weights)){
+    stop("weights must be numeric")
+  }
   
   #------------------------------------------------------------------------------------------------
   # initialise function
