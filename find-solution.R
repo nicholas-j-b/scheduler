@@ -211,18 +211,21 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     if(check.permissibility() < rand.gen.tolerance){
       gen.random()
     }
+    return(TRUE)
   }
   
   gen.local.search <- function(){
     # start with random mat
     gen.random()
     local.search(check.permissibility)
+    return(TRUE)
   }
   
   gen.simulated.annealing <- function(){
     # start with random mat
     gen.random()
     simulated.annealing(check.permissibility)
+    return(TRUE)
   }
   
   gen.greedy <- function(){
@@ -233,9 +236,8 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     i <- 1
     counts <- 1
     while(i <= sl){
-      cat("i : ", i, "\n")
       if(i < 1 || counts > greedy.limit){
-        stop("greedy algorithm has failed, try another init method")
+        stop("greedy algorithm has failed, try another init method or increase greedy.limit")
       }
       # ensure matching to check.mat
       cols <- sample((1:p)[work$check.mat[i, ]])
@@ -264,6 +266,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
         i <- i + 1
       }
     }
+    return(TRUE)
   }
   
   #------------------------------------------------------------------------------------------------
@@ -271,6 +274,9 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   
   check.permissibility <- function(){
     # a value between 0 and 1 : 1 is given only to permissible solutions
+    
+    # calculate weight of slots worked for each worker
+    work$weight.slots.worked <- work$expanded.weights %*% work$mat
     
     # all entries in work.mat fit in check.mat
     fit.check.mat <- sum(work$mat & work$check.mat) / sl
@@ -333,7 +339,6 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
           work$mat[i, j] <- TRUE
           
           # store score
-          work$weight.slots.worked <- work$expanded.weights %*% work$mat
           neighbour.slide.vals[i, j] <- eval.fun()
         }
         # reset row
@@ -348,7 +353,6 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
           work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
           
           # store score
-          work$weight.slots.worked <- work$expanded.weights %*% work$mat
           neighbour.swap.vals[i, j] <- eval.fun()
           
           #reset row
@@ -428,7 +432,6 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
             work$mat[i, j] <- TRUE
             
             # store score
-            work$weight.slots.worked <- work$expanded.weights %*% work$mat
             neighbour.slide.vals[i, j] <- eval.fun()
           }
           # reset row
@@ -455,7 +458,6 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
             work$mat[c(i, j), ] <- work$mat.copy[c(j, i), ]
             
             # store score
-            work$weight.slots.worked <- work$expanded.weights %*% work$mat
             neighbour.swap.vals[i, j] <- eval.fun()
             
             # reset rows
@@ -486,13 +488,16 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # main control flow of function
   
   # initialise mat using chosen algorithm
-  switch(init.process,
-         random = gen.random(),
-         simulated.annealing = gen.simulated.annealing(),
-         local.search = gen.local.search(),
-         greedy = gen.greedy(),
-         NULL
+  value.init.process <- switch(init.process,
+                               random = gen.random(),
+                               simulated.annealing = gen.simulated.annealing(),
+                               local.search = gen.local.search(),
+                               greedy = gen.greedy(),
+                               NULL
   )
+  if(is.null(value.init.process)){
+    stop("init.process not recognised")
+  }
   
   # optimise using chosen function
   score <- switch(algorithm,
@@ -501,8 +506,12 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
                   NULL
   )
   
+  if(is.null(score)){
+    stop("algorithm not recognised")
+  }
+  
   # return score and solution
-  return(list(score = score, solution = work$mat))
+  return(list(score = score, solution = work$mat, permissibility = check.permissibility()))
 }
 
 
@@ -517,7 +526,7 @@ load("~/ws-r/nsp/gen2_4.RData")
 
 # find.solution(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
 
-ans <- find.solution(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
+ans <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , algorithm = "local.search", tolerance = 1)
 
 # find.solution(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "simulated.annealing")
 
