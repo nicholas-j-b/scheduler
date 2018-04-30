@@ -6,7 +6,7 @@
 
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
                           algorithm = "simulated.annealing", init.process = "simulated.annealing", 
-                          no.temperatures = 81, rand.gen.tolerance = .65,
+                          num.temperatures = 81, rand.gen.tolerance = .65,
                           tolerance = .65, greedy.limit = 350,
                           num.neighbours.considered = 10, temp.exponent = 4){
   #------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # can be "simulated.annealing", "local.search", "random" or "greedy"
   # init.process tests against 'check.permissibility' function
   
-  # no.temperatures
+  # num.temperatures
   # number indicating how many iterations the algorithm 'simulated.annealing' should use
   
   # rand.gen.tolerance
@@ -121,6 +121,34 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   if(!is.numeric(weights)){
     stop("weights must be numeric")
   }
+  if(!all(rowSums(init2) >= 1)){
+    stop("A worker is in no group")
+  }
+  if(!is.numeric(num.temperatures)){
+    stop("num.temperatures must be number")
+  }
+  if(!is.numeric(rand.gen.tolerance)){
+    stop("rand.gen.tolerance must be number")
+  }
+  if(rand.gen.tolerance < 0 || rand.gen.tolerance > 1){
+    stop("rand.gen.tolerance must be between 0 and 1")
+  }
+  if(!is.numeric(tolerance)){
+    stop("tolerance must be number")
+  }
+  if(tolerance < 0 || tolerance > 1){
+    stop("tolerance must be between 0 and 1")
+  }
+  if(!is.numeric(greedy.limit)){
+    stop("greedy.limit must be number")
+  }
+  if(!is.numeric(num.neighbours.considered)){
+    stop("num.neighbours.considered must be number")
+  }
+  if(!is.numeric(temp.exponent)){
+    stop("temp.exponent must be number")
+  }
+
   
   #------------------------------------------------------------------------------------------------
   # initialise function
@@ -158,6 +186,19 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   work$check.mat <- availabilities.mat & group.mat
   rownames(work$check.mat) <- slot.titles
   work$expanded.weights <- rep(weights, times = times.vec)
+  
+  #------------------------------------------------------------------------------------------------
+  # more checks
+  
+  if(sum(work$expanded.weights) < colSums(init4)[1]){
+    stop("Not enough available shifts")
+  }
+  if(sum(work$expanded.weights) > colSums(init4)[2]){
+    stop("Not enough available work time (worker max too low)")
+  }
+  if(!all(rowSums(check.mat) >= 1)){
+    stop("At least one shift has no available worker")
+  }
   
   #------------------------------------------------------------------------------------------------
   # generate initial mat with chosen function
@@ -370,7 +411,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     work$mat.copy <- work$mat
     prev.best <- 0
     # set temp
-    temp.func <- seq(100, 0, length.out = no.temperatures)
+    temp.func <- seq(100, 0, length.out = num.temperatures)
     bool.swap <- FALSE
     for(temperature in temp.func){
       # update copy
