@@ -1,6 +1,6 @@
 # generate practise data
 
-save.location = "~/ws-r/nsp/gen2_1.RData"
+save.location = "~/ws-r/nsp/gen2_2.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -26,6 +26,22 @@ PERSON_SHIFT_MIN <- 0.4
 PERSON_SHIFT_MAX <- 2.2
 UNAVAILABLE_RATIO <- .1 # x to 1 ratio of being unavailable, high number mean very unavailable
 
+# TESTING CONSTANTS gen2_2
+seed <- 13
+PEOPLE_LOWER <- 3
+PEOPLE_UPPER <- 5
+SHIFT_LOWER <- 4
+SHIFT_UPPER <- 8
+GROUP_LOWER <- 2
+GROUP_UPPER <- 2
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+GROUP.LIKELIHOOD <- 5
+GROUP.DISLIKELIHOOD <- 2 # ratio with GROUP.LIKELIHOOD: person has x out of x + y chance of being in given group
+PERSON_SHIFT_MIN <- 0.4
+PERSON_SHIFT_MAX <- 2.2
+UNAVAILABLE_RATIO <- .1 # x to 1 ratio of being unavailable, high number mean very unavailable
+
 set.seed(seed)
 
 # generate practice inputs
@@ -38,6 +54,7 @@ s <- sample(SHIFT_LOWER:SHIFT_UPPER, size = 1)
 
 # number of groups
 g <- sample(GROUP_LOWER:GROUP_UPPER, size = 1)
+g <- 1
 
 # generate shift names - names are irrelevant, need only be unique
 shift.names <- sample(SHIFT_ID_LOWER:SHIFT_ID_UPPER, size = s)
@@ -58,7 +75,7 @@ rownames(init1) <- shift.names
 # if a shift could use a worker from group A or B then create a new group C and 
 # classify all A's and B's additionally as C's
 
-init2 <- cbind(replicate(g, rpois(s, 1.5)))
+init2 <- replicate(g, rpois(s, 1) + 1)
 colnames(init2) <- paste0(LETTERS[1:g])
 rownames(init2) <- shift.names
 
@@ -78,7 +95,7 @@ rownames(init3) <- paste0("P", 1:p)
 
 weights <- runif(s, min = SHIFT_WEIGHT_MIN, max = SHIFT_WEIGHT_MAX)
 names(weights) <- shift.names
-times.vec <-rowSums(init2)
+times.vec <- rowSums(init2)
 expanded.weights <- rep(weights, times = times.vec)
 
 # init4
