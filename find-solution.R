@@ -13,9 +13,9 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # arguments
   
   # init1
-  # a matrix with colomns of 'workers' and rows 'shifts'
+  # a matrix with columns of 'workers' and rows 'shifts'
   # 0 in cell expresses worker is unavailable for the shift
-  # higher number indicate greater preference of worker for the shift
+  # higher numbers indicate greater preference of worker for the shift
   
   # init2
   # a matrix with columns of groups and rows 'shifts'
@@ -24,12 +24,12 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # classify all A's and B's additionally as C's
   
   # init3
-  # bool matrix with colomns of groups and rows 'workers'
+  # bool matrix with columns of groups and rows 'workers'
   # specifying whether the 'worker' can do shifts of type [group]
   
   # init4
   # matrix of rows 'workers'
-  # coloumns min, max, optimal total worked for time period
+  # columns min, max, optimal total worked for time period
   
   # weights
   # vector with length nrow(init1)
@@ -59,7 +59,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # number between 0 and 1, indicates the lowest score on permissibility test allowed in solution
   # indicates flexibility of the 'evaluate' function
   
-  # greedy limit
+  # greedy.limit
   # number of partial restarts greedy algorithm is allowed when searching for permissible starting point
   
   # num.neighbours.considered
@@ -441,7 +441,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
         # find best slides, chose randomly from them
         best.slides <- order(neighbour.slide.vals, decreasing = TRUE)[1:num.neighbours.considered]
         chosen.slide.pos <- sample(x = best.slides, size = 1, 
-                                   prob = (1:num.neighbours.considered)^(temperature/(100 / temp.exponent) - temp.exponent))
+                                   prob = (1:num.neighbours.considered)^((temperature * temp.exponent)/100 - temp.exponent))
         chosen <- neighbour.slide.vals[chosen.slide.pos]
         
         # make slide
@@ -468,7 +468,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
         # find best swaps, chose randomly from them
         best.swaps <- order(neighbour.swap.vals, decreasing = TRUE)[1:num.neighbours.considered]
         chosen.swap.pos <- sample(x = best.swaps, size = 1, 
-                                  prob = (1:num.neighbours.considered)^(temperature/(100 / temp.exponent) - temp.exponent))
+                                  prob = (1:num.neighbours.considered)^((temperature * temp.exponent)/100 - temp.exponent))
         chosen <- neighbour.swap.vals[chosen.swap.pos]
         
         # make swap
