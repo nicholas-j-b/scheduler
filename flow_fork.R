@@ -1,15 +1,70 @@
-
-
-load("~/ws-r/nsp/gen2_4.RData")
-
-
-
-optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1, 
+optimise <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
                      algorithm = "simulated.annealing", init.process = "simulated.annealing", 
                      no.temperatures = 41, rand.gen.tolerance = .65,
-                     tolerance = .65, num.random.gens = 1000, greedy.limit = 250,
+                     tolerance = .65, greedy.limit = 350,
                      num.neighbours.considered = 10, temp.exponent = 4){
+  #------------------------------------------------------------------------------------------------
+  # arguments
   
+  # init1
+  # a matrix with colomns of 'workers' and rows 'shifts'
+  # 0 in cell expresses worker is unavailable for the shift
+  # higher number indicate greater preference of worker for the shift
+  
+  # init2
+  # a matrix with columns of groups and rows 'shifts'
+  # each cell expresses total number of workers from that group needed for that shift
+  # if a shift could use a worker from group A or B then create a new group C and 
+  # classify all A's and B's additionally as C's
+  
+  # init3
+  # bool matrix with colomns of groups and rows 'workers'
+  # specifying whether the 'worker' can do shifts of type [group]
+
+  # init4
+  # matrix of rows 'workers'
+  # coloumns min, max, optimal total worked for time period
+  
+  # weights
+  # vector with length nrow(init1)
+  # 'size' or 'length' of shift
+  # perhaps how hours are credited to the worker if they work the shift
+  
+  # work.opt.multiplier
+  # number indicating the importance of the preferences is init1
+
+  # algorithm
+  # string - algorithm for finding solution, can be "simulated.annealing" or "local.search"
+  # algorithm tests against 'evaluate' function
+  
+  # init.process
+  # string - algorithm for generating initial solution
+  # can be "simulated.annealing", "local.search", "random" or "greedy"
+  # init.process tests against 'check.permissibility' function
+  
+  # no.temperatures
+  # number indicating how many iterations the algorithm 'simulated.annealing' should use
+  
+  # rand.gen.tolerance
+  # number between 0 and 1, indicates the worst possible value for an initial solution if "random"
+  # for 'init.process' was chosen
+  
+  # tolerance
+  # number between 0 and 1, indicates the lowest score on permissibility test allowed in solution
+  # indicates flexibility of the 'evaluate' function
+  
+  # greedy limit
+  # number of partial restarts greedy algorithm is allowed when searching for permissible starting point
+  
+  # num.neighbours.considered
+  # number of top neighbours 'simulated.annealing' algorithm could potentially choose
+  
+  # temp.exponent
+  # number expressing the change in function as temperature drops for 'simulated.annealing'
+  # a large number indicates 'simulated.annealing' will often choose a better option
+  # lower numbers involve more chance, especially noticeable temperatures drop
+  
+    
   #------------------------------------------------------------------------------------------------
   # initialise function
   
@@ -147,7 +202,7 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
       return(0)
     }
     
-    # triangle density calculated with optimum and consider work.opt.multiplier, the relative importance of workers' preferences
+    # calculate nearness to optimum and consider work.opt.multiplier, the relative importance of workers' preferences
     score <- sum(ifelse(work$weight.slots.worked < init4[ , 3], 
                         (work$weight.slots.worked - init4[ , 1])/(init4[ , 3] - init4[ , 1]), 
                         (init4[ , 2] - work$weight.slots.worked)/(init4[ , 2] - init4[ , 3]))) * work.opt.multiplier
@@ -351,6 +406,13 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   # return score and solution
   return(list(score = score, solution = work$mat))
 }
+
+
+
+p <- load("~/ws-r/nsp/gen2_4.RData")
+
+
+
 
 
 # optimise(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing", tolerance = 1)
