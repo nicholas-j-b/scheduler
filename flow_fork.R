@@ -1,24 +1,22 @@
 
 
-load("~/ws-r/nsp/gen2_2.RData")
+load("~/ws-r/nsp/gen2_4.RData")
 
 
 
 optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1, 
                      algorithm = "simulated.annealing", init.process = "simulated.annealing", 
                      no.temperatures = 41, rand.gen.tolerance = .65,
-                     tolerance = .65, num.random.gens = 1000){
-  
+                     tolerance = .65, num.random.gens = 1000, greedy.limit = 250){
   
   #------------------------------------------------------------------------------------------------
   # initialise function
   
-  
   # generate size variables
-  p <- ncol(init1)
-  s <- nrow(init1)
-  g <- ncol(init2)
-  sl <- sum(init2)
+  p <- ncol(init1) # number of people
+  s <- nrow(init1) # number of shifts
+  g <- ncol(init2) # number of groups
+  sl <- sum(init2) # number of slots
   
   # establish environment
   work <- new.env()
@@ -33,6 +31,8 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   slot.ref.names <- rep(rownames(init2), times = rowSums(init2))
   slot.titles <- make.unique(paste0(slot.ref.names, slot.names))
   rownames(work$mat) <- slot.titles
+  
+  #initialise copy for manipulation
   work$mat.copy <- work$mat
   
   # establish check.mat (const)
@@ -46,38 +46,51 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
   rownames(work$check.mat) <- slot.titles
   work$expanded.weights <- rep(weights, times = times.vec)
 
-  
-  
   #------------------------------------------------------------------------------------------------
-  # generate initial work.mat with chosen function
+  # generate initial mat with chosen function
   
   gen.random.mat <- function(){
+    # start with random mat that has one TRUE per row
     work$mat <- t(replicate(sl, sample(c(rep(FALSE, times = p - 1), TRUE), size = p, replace = FALSE)))
     work$weight.slots.worked <- work$expanded.weights %*% work$mat
+    # if randomly generated mat is very poor, start again
     if(check.permissibility() < rand.gen.tolerance){
-      work$mat <- gen.random.mat()
+      gen.random.mat()
     }
   }
   
   gen.local.search <- function(){
+    # start with random mat
     gen.random.mat()
     local.search(check.permissibility)
   }
   
   gen.simulated.annealing <- function(){
+    # start with random mat
     gen.random.mat()
-    return(simulated.annealing(check.permissibility))
+    simulated.annealing(check.permissibility)
+    print(check.permissibility())
+    stop()
   }
   
   gen.greedy <- function(){
+    failure <- TRUE
+    # initialise empty mat
     work$mat <- matrix(FALSE, ncol = p, nrow = sl)
-    for(i in 1:sl){
-      if(i < 1){
+    # loop over rows
+    i <- 1
+    counts <- 1
+    while(i <= sl){
+      cat("i : ", i, "\n")
+      if(i < 1 || counts > greedy.limit){
         stop("greedy algorithm has failed, try another init method")
       }
       # ensure matching to check.mat
-      cols <- sample((1:p)[work$check.mat[i, ]]) 
+      cols <- sample((1:p)[work$check.mat[i, ]])
+      print("cols")
+      print(cols)
       for(j in cols){
+        # initialise row to be tested
         work$mat[i, ] <- FALSE
         work$mat[i, j] <- TRUE
         
@@ -86,19 +99,25 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
           # check shifts worked less than max for person
           work$weight.slots.worked <- work$expanded.weights %*% work$mat
           if(all(work$weight.slots.worked < init4[ ,2])){
+            failure <- FALSE
             break
           }
         }
-        if(j == cols[length(cols)]){
-          i <- i - 2
-          break
-        }
+        failure <- TRUE
+
+      }
+      # if no solutions for the row can be found, move up one layer and try the next
+      if(failure){
+        work$mat[i, ] <- FALSE
+        i <- i - 1
+        counts <- counts + 1
+      } else {
+        i <- i + 1
       }
     }
-    print(work$mat)
     print(check.permissibility())
+    stop()
   }
-  
   
   #------------------------------------------------------------------------------------------------
   # a function to check the permissibility of a matrix
@@ -112,18 +131,24 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     # check only 1 slot / person / shift
     fit.slot.lim <- sum(apply(work$mat, MARGIN = 2, FUN = tapply, INDEX = work$rep.vec, sum) <= 1) / (p * s)
     
-    # check between min and max
-    fit.min.max <- sum((init4[ ,1] < work$weight.slots.worked) & (work$weight.slots.worked < init4[ ,2])) / p
+    # check lower than max
+    fit.max <- sum(work$weight.slots.worked < init4[ ,2]) / p
+    
+    # check greater than min
+    fit.min <- sum(init4[ ,1] < work$weight.slots.worked) / p
+    
     
     # permissibility rating
-    permissibility <- (fit.check.mat + fit.slot.lim + fit.min.max) / 3
+    permissibility <- (fit.check.mat + fit.slot.lim + fit.max + fit.min) / 4
     
-    # debug
+    # print(work$mat)
     # print(work$check.mat)
+    # print(work$mat & work$check.mat)
     # print("fit ratings")
     # print(fit.check.mat)
     # print(fit.slot.lim)
-    # print(fit.min.max)
+    # print(fit.max)
+    # print(fit.min)
     # print(sum(work$mat & work$check.mat))
     # print("sl")
     # print(sl)
@@ -132,7 +157,6 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     # print(init4[ , 1])
     # print(init4[ , 2])
     # print(work$weight.slots.worked)
-    # stop("ok")
     
     # consecutiveness 
     # how many shifts can be done consecutively 
@@ -150,8 +174,6 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
     if(permissibility < tolerance){
       return(0)
     }
-    
-    # evaluate
     
     # triangle density calculated with optimum
     score <- sum(ifelse(work$weight.slots.worked < init4[ , 3], 
@@ -407,13 +429,13 @@ optimise <- function(init1, init2, init3, init4, work.opt.multiplier = 1,
 }
 
 
-optimise(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing")
+# optimise(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing", tolerance = 1)
 
-optimise(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
+# optimise(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
 
 optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "local.search")
 
-optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "simulated.annealing")
+# optimise(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "simulated.annealing")
 
 
 

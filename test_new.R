@@ -1,6 +1,6 @@
 # generate practise data
 
-save.location = "~/ws-r/nsp/gen2_2.RData"
+save.location = "~/ws-r/nsp/gen2_4.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -30,6 +30,38 @@ UNAVAILABLE_RATIO <- .1 # x to 1 ratio of being unavailable, high number mean ve
 seed <- 13
 PEOPLE_LOWER <- 3
 PEOPLE_UPPER <- 5
+SHIFT_LOWER <- 4
+SHIFT_UPPER <- 8
+GROUP_LOWER <- 2
+GROUP_UPPER <- 2
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+GROUP.LIKELIHOOD <- 5
+GROUP.DISLIKELIHOOD <- 2 # ratio with GROUP.LIKELIHOOD: person has x out of x + y chance of being in given group
+PERSON_SHIFT_MIN <- 0.4
+PERSON_SHIFT_MAX <- 2.2
+UNAVAILABLE_RATIO <- .1 # x to 1 ratio of being unavailable, high number mean very unavailable
+
+# TESTING CONSTANTS gen2_3
+seed <- 14
+PEOPLE_LOWER <- 3
+PEOPLE_UPPER <- 5
+SHIFT_LOWER <- 4
+SHIFT_UPPER <- 8
+GROUP_LOWER <- 2
+GROUP_UPPER <- 2
+SHIFT_WEIGHT_MIN <- 1
+SHIFT_WEIGHT_MAX <- 5
+GROUP.LIKELIHOOD <- 5
+GROUP.DISLIKELIHOOD <- 2 # ratio with GROUP.LIKELIHOOD: person has x out of x + y chance of being in given group
+PERSON_SHIFT_MIN <- 0.4
+PERSON_SHIFT_MAX <- 2.2
+UNAVAILABLE_RATIO <- .1 # x to 1 ratio of being unavailable, high number mean very unavailable
+
+# TESTING CONSTANTS gen2_4
+seed <- 15
+PEOPLE_LOWER <- 7
+PEOPLE_UPPER <- 8
 SHIFT_LOWER <- 4
 SHIFT_UPPER <- 8
 GROUP_LOWER <- 2
@@ -113,6 +145,10 @@ init4[ ,2] <- init4[ ,3] * PERSON_SHIFT_MAX
 save(init1, init2, init3, init4, weights, file = save.location)
 
 
+
+
+
+rep.vec <- rep(1:s, times = times.vec)
 
 
 
