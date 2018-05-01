@@ -6,8 +6,8 @@
 
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
                           algorithm = "simulated.annealing", init.process = "simulated.annealing", 
-                          num.temperatures = 81, rand.gen.tolerance = .65,
-                          tolerance = .65, greedy.limit = 100,
+                          num.temperatures = 21, rand.gen.tolerance = .65,
+                          tolerance = .75, greedy.limit = 100,
                           num.neighbours.considered = 10, temp.exponent = 4){
   #------------------------------------------------------------------------------------------------
   # arguments
@@ -104,7 +104,8 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     stop("Lenght of weights must equal number of rows in init1")
   }
   if(!all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= init4[ ,2])){
-    stop("Problem in init4: comparison all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= init4[ ,2]) failed\n init4: Minimum, Maximum, Optimal")
+    stop("Problem in init4: comparison all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= 
+         init4[ ,2]) failed\n init4: Minimum, Maximum, Optimal")
   }
   if(!is.numeric(init1)){
     stop("init1 must be numeric")
@@ -525,31 +526,19 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
 
 
 
-load("~/ws-r/nsp/test_data_1_1.RData")
 
 
-ans1 <- ans2 <- ans3 <- ans4 <- list()
 
 
-# ans1 <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , algorithm = "simulated.annealing", tolerance = 1)
 
-for(i in 1:10){
-  ans2[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "local.search", 
-                                algorithm = "local.search", tolerance = 1)
-}
 
-print("ans2 complete")
 
-for(i in 1:10){
-  ans3[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , 
-                                algorithm = "local.search", tolerance = 1)
-}
-print("ans3 complete")
 
-for(i in 1:10){
-  ans4 <- find.solution(init1, init2, init3, init4, weights, init.process = "simulated.annealing" , 
-                                algorithm = "local.search", tolerance = 1)
-}
+
+
+
+
+
 
 
 

@@ -4,7 +4,7 @@
 # Code to generate practise data for the accompanying script, 'find-solution.R'
 # For more information see the README attached with this download
 
-save.location = "~/ws-r/nsp/test_data_2_1.RData"
+save.location = "~/ws-r/nsp/test_data_3_1.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
@@ -29,12 +29,27 @@ SHIFT_ID_UPPER <- 999999
 # PERSON_SHIFT_MAX <- 2.2
 # UNAVAILABLE_RATIO <- .1 # x to 1 ratio of being unavailable, high number mean very unavailable
 
-# TESTING CONSTANTS test_data_2_1
-seed <- 16
-PEOPLE_LOWER <- 10
-PEOPLE_UPPER <- 12
-SHIFT_LOWER <- 6
-SHIFT_UPPER <- 7
+# # TESTING CONSTANTS test_data_2_1
+# seed <- 16
+# PEOPLE_LOWER <- 10
+# PEOPLE_UPPER <- 12
+# SHIFT_LOWER <- 6
+# SHIFT_UPPER <- 7
+# NUM_GROUPS <- 2
+# SHIFT_WEIGHT_MIN <- 1
+# SHIFT_WEIGHT_MAX <- 5
+# GROUP.LIKELIHOOD <- 5
+# GROUP.DISLIKELIHOOD <- 2 # ratio with GROUP.LIKELIHOOD: person has x out of x + y chance of being in given group
+# PERSON_SHIFT_MIN <- 0.4
+# PERSON_SHIFT_MAX <- 2.2
+# UNAVAILABLE_RATIO <- .3 # x to 1 ratio of being unavailable, high number mean very unavailable
+
+# TESTING CONSTANTS test_data_3_1
+seed <- 12
+PEOPLE_LOWER <- 8
+PEOPLE_UPPER <- 9
+SHIFT_LOWER <- 4
+SHIFT_UPPER <- 5
 NUM_GROUPS <- 2
 SHIFT_WEIGHT_MIN <- 1
 SHIFT_WEIGHT_MAX <- 5
@@ -42,7 +57,7 @@ GROUP.LIKELIHOOD <- 5
 GROUP.DISLIKELIHOOD <- 2 # ratio with GROUP.LIKELIHOOD: person has x out of x + y chance of being in given group
 PERSON_SHIFT_MIN <- 0.4
 PERSON_SHIFT_MAX <- 2.2
-UNAVAILABLE_RATIO <- .3 # x to 1 ratio of being unavailable, high number mean very unavailable
+UNAVAILABLE_RATIO <- .7 # x to 1 ratio of being unavailable, high number means very unavailable
 
 set.seed(seed)
 
