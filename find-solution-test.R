@@ -6,7 +6,7 @@
 
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
                           algorithm = "simulated.annealing", init.process = "simulated.annealing", 
-                          num.temperatures = 21, rand.gen.tolerance = .65,
+                          num.temperatures = 81, rand.gen.tolerance = .65,
                           tolerance = .65, greedy.limit = 100,
                           num.neighbours.considered = 10, temp.exponent = 4){
   #------------------------------------------------------------------------------------------------
@@ -148,7 +148,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   if(!is.numeric(temp.exponent)){
     stop("temp.exponent must be number")
   }
-
+  
   
   #------------------------------------------------------------------------------------------------
   # initialise function
@@ -488,22 +488,25 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # main control flow of function
   
   # initialise mat using chosen algorithm
-  value.init.process <- switch(init.process,
+  init.time <- system.time(value.init.process <- switch(init.process,
                                random = gen.random(),
                                simulated.annealing = gen.simulated.annealing(),
                                local.search = gen.local.search(),
                                greedy = gen.greedy(),
                                NULL
   )
+  )
+  init.permissibility <- check.permissibility()
   if(is.null(value.init.process)){
     stop("init.process not recognised")
   }
   
   # optimise using chosen function
-  score <- switch(algorithm,
+  optimise.time <- system.time(score <- switch(algorithm,
                   simulated.annealing = simulated.annealing(evaluate),
                   local.search = local.search(evaluate),
                   NULL
+  )
   )
   
   if(is.null(score)){
@@ -515,7 +518,9 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   colnames(work$mat) <- colnames(init1)
   
   # return score and solution
-  return(list(score = score, permissibility = check.permissibility(), solution = work$mat))
+  return(list(score = score, permissibility = check.permissibility(), solution = work$mat, 
+              init.time = init.time, init.permissibility = init.permissibility,
+              optimise.time = optimise.time))
 }
 
 
@@ -523,24 +528,28 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
 load("~/ws-r/nsp/test_data_1_1.RData")
 
 
+ans1 <- ans2 <- ans3 <- ans4 <- list()
 
 
+# ans1 <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , algorithm = "simulated.annealing", tolerance = 1)
 
-# find.solution(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing", tolerance = 1)
+for(i in 1:10){
+  ans2[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "local.search", 
+                                algorithm = "local.search", tolerance = 1)
+}
 
-# find.solution(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
+print("ans2 complete")
 
-ans <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , algorithm = "local.search", tolerance = 1)
+for(i in 1:10){
+  ans3[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , 
+                                algorithm = "local.search", tolerance = 1)
+}
+print("ans3 complete")
 
-# find.solution(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "simulated.annealing")
-
-
-
-
-
-
-
-
+for(i in 1:10){
+  ans4 <- find.solution(init1, init2, init3, init4, weights, init.process = "simulated.annealing" , 
+                                algorithm = "local.search", tolerance = 1)
+}
 
 
 
