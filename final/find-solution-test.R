@@ -1,7 +1,7 @@
 # Code written by Nicholas Brooking for the purpose of supplementing a submission
 # for the Bachelor Thesis for a Bachelor of Statistics at the University of Vienna
 
-# A function that assists the solving of an NSP
+# A testing version of the function 'find.solution' that assists the solving of an NSP
 # For more information see the README attached with this download
 
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
@@ -417,7 +417,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     prev.best <- 0
     # set temp
     temp.func <- seq(100, 0, length.out = num.temperatures)
-    bool.swap <- FALSE
+    bool.swap <- TRUE
     for(temperature in temp.func){
       # update copy
       work$mat.copy <- work$mat
@@ -523,24 +523,3 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
               init.time = init.time, init.permissibility = init.permissibility,
               optimise.time = optimise.time))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

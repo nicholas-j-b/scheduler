@@ -7,7 +7,7 @@
 find.solution <- function(init1, init2, init3, init4, weights, work.opt.multiplier = 1, 
                           algorithm = "simulated.annealing", init.process = "simulated.annealing", 
                           num.temperatures = 21, rand.gen.tolerance = .65,
-                          tolerance = .65, greedy.limit = 100,
+                          tolerance = .75, greedy.limit = 100,
                           num.neighbours.considered = 10, temp.exponent = 4){
   #------------------------------------------------------------------------------------------------
   # arguments
@@ -104,7 +104,8 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
     stop("Lenght of weights must equal number of rows in init1")
   }
   if(!all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= init4[ ,2])){
-    stop("Problem in init4: comparison all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= init4[ ,2]) failed\n init4: Minimum, Maximum, Optimal")
+    stop("Problem in init4: comparison all(init4[ ,1] <= init4[ ,3] & init4[, 3] <= 
+         init4[ ,2]) failed\n init4: Minimum, Maximum, Optimal")
   }
   if(!is.numeric(init1)){
     stop("init1 must be numeric")
@@ -517,32 +518,3 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # return score and solution
   return(list(score = score, permissibility = check.permissibility(), solution = work$mat))
 }
-
-
-
-load("~/ws-r/nsp/test_data_1_1.RData")
-
-
-
-
-
-# find.solution(init1, init2, init3, init4, init.process = "greedy" , algorithm = "simulated.annealing", tolerance = 1)
-
-# find.solution(init1, init2, init3, init4, init.process = "local.search" , algorithm = "local.search")
-
-ans <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , algorithm = "local.search", tolerance = 1)
-
-# find.solution(init1, init2, init3, init4, init.process = "simulated.annealing" , algorithm = "simulated.annealing")
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -133,10 +133,6 @@ save(init1, init2, init3, init4, weights, file = save.location)
 
 
 
-#rep.vec <- rep(1:s, times = times.vec)
-
-
-
 
 
 
