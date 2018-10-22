@@ -197,7 +197,7 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   if(sum(work$expanded.weights) > colSums(init4)[2]){
     stop("Not enough available work time (worker max too low)")
   }
-  if(!all(rowSums(check.mat) >= 1)){
+  if(!all(rowSums(work$check.mat) >= 1)){
     stop("At least one shift has no available worker")
   }
   
@@ -521,5 +521,5 @@ find.solution <- function(init1, init2, init3, init4, weights, work.opt.multipli
   # return score and solution
   return(list(score = score, permissibility = check.permissibility(), solution = work$mat, 
               init.time = init.time, init.permissibility = init.permissibility,
-              optimise.time = optimise.time))
+              optimise.time = optimise.time, check.mat = work$check.mat))
 }

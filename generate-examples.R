@@ -8,16 +8,18 @@
 # for example:
 # load(".../test_data_1_1.RData")
 
+load("/home/nick/ws-r/scheduler/scheduler/test_data_1_1.RData")
+
 
 greedy.local <- local.local <- anneal.anneal <- list()
 number.of.trials <- 10
 
 # run tests
 # be sure to use the function from 'find-solution-test.R'
-for(i in 1:number.of.trials){
-  greedy.local[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , 
-                                     algorithm = "local.search", tolerance = 1)
-}
+# for(i in 1:number.of.trials){
+#   greedy.local[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "greedy" , 
+#                                      algorithm = "local.search", tolerance = 1)
+# }
 
 for(i in 1:number.of.trials){
   local.local[[i]] <- find.solution(init1, init2, init3, init4, weights, init.process = "local.search", 

@@ -4,7 +4,7 @@
 # Code to generate practise data for the accompanying script, 'find-solution.R'
 # For more information see the README attached with this download
 
-save.location = "~/ws-r/scheduler/test_data_3_1.RData"
+save.location = "~/ws-r/scheduler/scheduler/test_data_1_1.RData"
 
 # PROGRAM CONSTANTS
 UNAVAILABLE <- 0
