@@ -1,14 +1,22 @@
-Scheduler
+# Scheduler
 
+### just-looking.R
+All inclusive example with random data if you're just visiting.
 
-No installation required. The R scripts can be run from any R console.
+### find-solution.R 
+This file contains the function find.solution().
+Call this from your code to help solve your NSP, see in code comments for input details.
 
-find-solution.R contains the function find.solution() that can be added to your code to help solve your NSP, see in code comments for details.
+### find-solution-test.R 
+This contains a testing version of the function in find-solution.R.
+This is used for testing purposes or when more information in the output is desired.
+Use this when calling the function from the included example-use.R.
 
-find-solution-test.R contains a very similar function that is used for testing purposes or when more information in the output is desired. (Also returns times taken).
+### generate-test-data.R 
+This will generate random data which can be used as input. Use this to quickly explore the program.
 
-generate-test-data.R can be adjusted and run to create example input data.
-
-generate-examples.R can be used to analyse outputs of the function found in find-solution-test.R
+### example-use.R 
+Be sure to import find-solution-test.R.
+This calss find-solution on your data many times with different parameters - 
 
 Happy optimising!
