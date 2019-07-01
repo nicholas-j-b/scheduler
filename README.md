@@ -2,6 +2,8 @@
 
 ### just-looking.R
 All inclusive example with random data if you're just visiting.
+From the console:
+Rscript just-looking.R
 
 ### find-solution.R 
 This file contains the function find.solution().

@@ -21,7 +21,7 @@ number.of.trials <- 10
 #                                      algorithm = "local.search", tolerance = 1)
 # }
 
-run = FALSE
+run = TRUE
 
 if(run == TRUE){
   print("using local search")
@@ -42,8 +42,8 @@ if(run == TRUE){
 
 # saving recommended
 # for example
-# save(local.local, anneal.anneal, file = "current_test_data.RData")
-load(file = "current_test_data.RData")
+save(local.local, anneal.anneal, file = "current_test_data.RData")
+# load(file = "current_test_data.RData")
 
 # set graphic colours
 cols <- c("goldenrod3", "royalblue3", "olivedrab3")
