@@ -46,7 +46,7 @@ SHIFT_ID_UPPER <- 999999
 
 # TESTING CONSTANTS test_data_3_1
 seed <- 12
-PEOPLE_LOWER <- 8
+PEOPLE_LOWER <- 6
 PEOPLE_UPPER <- 9
 SHIFT_LOWER <- 4
 SHIFT_UPPER <- 5
@@ -57,7 +57,7 @@ GROUP.LIKELIHOOD <- 5
 GROUP.DISLIKELIHOOD <- 2 # ratio with GROUP.LIKELIHOOD: person has x out of x + y chance of being in given group
 PERSON_SHIFT_MIN <- 0.4
 PERSON_SHIFT_MAX <- 2.2
-UNAVAILABLE_RATIO <- .7 # x to 1 ratio of being unavailable, high number means very unavailable
+UNAVAILABLE_RATIO <- .4 # x to 1 ratio of being unavailable, high number means very unavailable
 
 set.seed(seed)
 
@@ -80,7 +80,7 @@ shift.names <- sample(SHIFT_ID_LOWER:SHIFT_ID_UPPER, size = s)
 # 0 in cell expresses worker is unavailable for the shift
 # non 0 is the desire of the worker to do shift from LEAST_DESIRE to MOST_DESIRE
 
-init1 <- cbind(replicate(p, sample(c(rep(UNAVAILABLE, times = length(LEAST_DESIRE:MOST_DESIRE) * UNAVAILABLE_RATIO), 
+init1 <- cbind(replicate(p, sample(c(rep(UNAVAILABLE, times = length(LEAST_DESIRE:MOST_DESIRE) * UNAVAILABLE_RATIO),
                                      LEAST_DESIRE:MOST_DESIRE), size = s, replace = TRUE))) # cbind does nothing?
 colnames(init1) <- paste0("P", 1:p)
 rownames(init1) <- shift.names
@@ -88,7 +88,7 @@ rownames(init1) <- shift.names
 # init2
 # matrix with columns of groups and rows 'shifts'
 # each cell expresses total number of workers from that group needed for that shift
-# if a shift could use a worker from group A or B then create a new group C and 
+# if a shift could use a worker from group A or B then create a new group C and
 # classify all A's and B's additionally as C's
 
 init2 <- replicate(g, rpois(s, .5) + 1)
@@ -100,7 +100,7 @@ rownames(init2) <- shift.names
 # specifying whether the 'worker' can do shifts of type [group]
 # all are in group A to help generator create vaulable data
 
-init3 <- cbind(replicate(g, sample(c(rep(TRUE, times = GROUP.LIKELIHOOD), 
+init3 <- cbind(replicate(g, sample(c(rep(TRUE, times = GROUP.LIKELIHOOD),
                                      rep(FALSE, times = GROUP.DISLIKELIHOOD)), size = p, replace = TRUE)))
 # all are in group A
 init3[ , 1] <- TRUE
@@ -127,13 +127,3 @@ init4[ ,2] <- init4[ ,3] * PERSON_SHIFT_MAX
 
 # save files for loading into program
 save(init1, init2, init3, init4, weights, file = save.location)
-
-
-
-
-
-
-
-
-
-
